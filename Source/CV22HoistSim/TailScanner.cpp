@@ -11,6 +11,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Kismet/GameplayStatics.h"
 #include "CV22.h"
+#include "CV22MovementComponent.h"
 
 // Sets default values
 ATailScanner::ATailScanner()
@@ -53,9 +54,18 @@ void ATailScanner::BeginPlay()
 	}
 
 	RightController->SetEnabled(false);
-	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
 	MoveToNextBeAt();
 	ResetView();
+
+	UHeadMountedDisplayFunctionLibrary::EnableHMD(true);
+	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
+	if (SpectatorTexture != nullptr) {
+		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenTexture(SpectatorTexture);
+		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenModeTexturePlusEyeLayout(FVector2D(0.03f, 0.03f), FVector2D(0.35f, 0.35f), FVector2D(0.0f, 0.0f), FVector2D(1.0f, 1.0f), false, false, false);
+		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenMode(ESpectatorScreenMode::TexturePlusEye);
+	} else {
+		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenMode(ESpectatorScreenMode::SingleEyeCroppedToFill);
+	}
 }
 
 void ATailScanner::AffectMoveToNext() {
@@ -155,23 +165,38 @@ void ATailScanner::ReleaseRight() {
 	if (RightController) RightController->ReleaseGrab();
 }
 
-void ATailScanner::MoveForward(float amount) {
+UCV22MovementComponent* ATailScanner::GetCV22MovementComponent() {
+	ACV22* cv22 = Cast<ACV22>(CurrentBeAtActor);
+	if (!cv22) return nullptr;
+	UCV22MovementComponent* movementComponent = Cast<UCV22MovementComponent>(cv22->GetComponentByClass(UCV22MovementComponent::StaticClass()));
+	return movementComponent;
+}
 
+void ATailScanner::MoveForward(float amount) {
+	UCV22MovementComponent* movementComponent = GetCV22MovementComponent();
+	if (!movementComponent) return;
+	movementComponent->MoveForward(amount);
 }
 void ATailScanner::MoveRight(float amount) {
-
+	UCV22MovementComponent* movementComponent = GetCV22MovementComponent();
+	if (!movementComponent) return;
+	movementComponent->MoveRight(amount);
 }
 void ATailScanner::MoveUp(float amount) {
-
+	UCV22MovementComponent* movementComponent = GetCV22MovementComponent();
+	if (!movementComponent) return;
+	movementComponent->MoveUp(amount);
 }
 void ATailScanner::YawRight(float amount) {
-
+	UCV22MovementComponent* movementComponent = GetCV22MovementComponent();
+	if (!movementComponent) return;
+	movementComponent->YawRight(amount);
 }
 
 void ATailScanner::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	
 	PlayerInputComponent->BindAction(FName("CyclePosition"), IE_Pressed, this, &ATailScanner::MoveToNextBeAt);
 	PlayerInputComponent->BindAction(FName("ResetView"), IE_Pressed, this, &ATailScanner::ResetView);
 

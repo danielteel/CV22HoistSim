@@ -29,6 +29,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	AActor* CurrentBeAtActor = nullptr;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UTexture* SpectatorTexture = nullptr;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool NVGsOn = false;
 
@@ -74,6 +77,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ReleaseRight();
+
+	class UCV22MovementComponent* GetCV22MovementComponent();
 
 	void MoveForward(float amount);
 	void MoveRight(float amount);
