@@ -22,7 +22,12 @@ public:
 	void MoveUp(float val);
 	void YawRight(float val);
 
+	UFUNCTION(BlueprintCallable, Category = Setup)
+	void Setup(UPrimitiveComponent* aircraft);
+
 protected:
+	UPrimitiveComponent* Aircraft = nullptr;
+
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere)

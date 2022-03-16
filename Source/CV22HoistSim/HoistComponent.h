@@ -8,8 +8,9 @@
 #include "HoistComponent.generated.h"
 
 
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class CV22HOISTSIM_API UHoistComponent : public UStaticMeshComponent {
+class CV22HOISTSIM_API UHoistComponent : public USceneComponent {
 	GENERATED_BODY()
 
 public:
@@ -19,6 +20,7 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
 
 public:
 	// Called every frame
@@ -79,7 +81,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMesh* RescueHookMesh = nullptr;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
+	class UStaticMesh* BoomHeadMesh = nullptr;
+
+	UStaticMeshComponent* BoomHead = nullptr;
 	URescueHook* RescueHook = nullptr;
 
 	UPROPERTY(VisibleAnywhere)

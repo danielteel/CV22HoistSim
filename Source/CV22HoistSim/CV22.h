@@ -31,6 +31,9 @@ public:
 
 protected:
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class USceneComponent* Root = nullptr;
+
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
 	class UStaticMeshComponent* Body = nullptr;
 
@@ -49,6 +52,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
 	class UAudioComponent* AircraftNoise = nullptr;
 
-
+	UPROPERTY(VisibleAnywhere, Category = Movement)
+	class UCV22MovementComponent* MovementComponent = nullptr;
 
 };

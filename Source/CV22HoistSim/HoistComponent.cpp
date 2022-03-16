@@ -23,38 +23,21 @@ UHoistComponent::UHoistComponent() {
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+
+	BoomHeadMesh = CreateDefaultSubobject<UStaticMesh>(FName("BoomHeadMesh"));
+	RescueHookMesh = CreateDefaultSubobject<UStaticMesh>(FName("HookMesh"));
 
 	CableBase = CreateDefaultSubobject<USphereComponent>(FName("CableBase"));
 	CableBase->SetupAttachment(this);
-	CableBase->InitSphereRadius(0.1f);
-	CableBase->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	CableBase->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	CableBase->SetWorldLocation(GetComponentLocation());
 
+	BoomHead = CreateDefaultSubobject<UStaticMeshComponent>(FName("BoomHead"));
+	BoomHead->SetupAttachment(this);
 
 	RescueHook = CreateDefaultSubobject<URescueHook>(FName("RescueHook"));
 	RescueHook->SetupAttachment(this);
 
-	RescueHook->SetMassOverrideInKg(NAME_None, 3.0f);
-	RescueHook->SetSimulatePhysics(true);
-	RescueHook->SetUseCCD(true);
-	RescueHook->bCastFarShadow = true;
-	RescueHook->bCastDynamicShadow = true;
-	RescueHook->SetWorldLocation(GetComponentLocation(), false, nullptr, ETeleportType::ResetPhysics);
-
 	CableBaseConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(FName("CableBaseConstraint"));
-	CableBaseConstraint->SetupAttachment(this);
-	CableBaseConstraint->SetWorldLocation(CableBase->GetComponentLocation());
-	CableBaseConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
-	CableBaseConstraint->SetLinearYLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
-	CableBaseConstraint->SetLinearZLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
-	CableBaseConstraint->ConstraintInstance.ProfileInstance.LinearLimit.bSoftConstraint = 0;
-	CableBaseConstraint->ConstraintInstance.ProfileInstance.LinearLimit.Restitution = 0.0f;
-	CableBaseConstraint->ConstraintInstance.ProfileInstance.LinearLimit.ContactDistance = 7620.0f;
-	CableBaseConstraint->SetDisableCollision(true);
-	CableBaseConstraint->SetWorldLocation(GetComponentLocation());
+	CableBaseConstraint->SetupAttachment(CableBase);
 
 	BaseToHookCable = CreateDefaultSubobject<UCableComponent>(FName("BaseToHookCable"));
 	BaseToHookCable->SetupAttachment(CableBase);
@@ -65,22 +48,22 @@ UHoistComponent::UHoistComponent() {
 	BaseToHookCable->SubstepTime = 0.01;
 	BaseToHookCable->SetEnableGravity(true);
 	BaseToHookCable->bEnableCollision = true;
+	BaseToHookCable->EndLocation = FVector(0.0f);
+	BaseToHookCable->SetAttachEndToComponent(RescueHook);
 	BaseToHookCable->bCastFarShadow = true;
 	BaseToHookCable->bCastDynamicShadow = true;
 	BaseToHookCable->CableWidth = 4.0f;
 	BaseToHookCable->CollisionFriction = 0.05f;
 
-
 	BoomToBaseCable = CreateDefaultSubobject<UCableComponent>(FName("BoomToBaseCable"));
-	BoomToBaseCable->SetupAttachment(this);
-	BoomToBaseCable->SetAttachEndToComponent(CableBase);
-	BoomToBaseCable->EndLocation = FVector(0.0f);
+	BoomToBaseCable->SetupAttachment(BoomHead);
 	BoomToBaseCable->CableLength = 1.0f;
 	BoomToBaseCable->NumSegments = 1;
 	BoomToBaseCable->SubstepTime = BaseToHookCable->SubstepTime;
 	BoomToBaseCable->SetEnableGravity(true);
+	BoomToBaseCable->EndLocation = FVector(0.0f);
+	BoomToBaseCable->SetAttachEndToComponent(CableBase);
 	BoomToBaseCable->CableWidth = BaseToHookCable->CableWidth;
-
 
 	CableGrabber = CreateDefaultSubobject<UCableGrabComponent>(FName("CableGrabber"));
 	CableGrabber->SetupAttachment(this);
@@ -90,13 +73,36 @@ UHoistComponent::UHoistComponent() {
 // Called when the game starts
 void UHoistComponent::BeginPlay() {
 	Super::BeginPlay();
+
 	BaseToHookCable->AttachToComponent(CableBase, FAttachmentTransformRules::SnapToTargetIncludingScale);
 	BaseToHookCable->SetAttachEndToComponent(RescueHook);
-	BaseToHookCable->EndLocation = FVector(0.0f);
+
+	BoomToBaseCable->AttachToComponent(BoomHead, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	BoomToBaseCable->SetAttachEndToComponent(CableBase);
+
 	CableGrabber->Setup(BaseToHookCable);
 
+	BoomHead->SetStaticMesh(BoomHeadMesh);
+	BoomHead->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	BoomHead->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+
+	CableBase->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	CableBase->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 
 	RescueHook->SetStaticMesh(RescueHookMesh);
+	RescueHook->SetMassOverrideInKg(NAME_None, 3.0f);
+	RescueHook->SetSimulatePhysics(true);
+	RescueHook->SetUseCCD(true);
+	RescueHook->bCastFarShadow = true;
+	RescueHook->bCastDynamicShadow = true;
+
+	CableBaseConstraint->SetWorldLocation(GetComponentLocation());
+	CableBaseConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
+	CableBaseConstraint->SetLinearYLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
+	CableBaseConstraint->SetLinearZLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
+	CableBaseConstraint->ConstraintInstance.ProfileInstance.LinearLimit.bSoftConstraint = 0;
+	CableBaseConstraint->ConstraintInstance.ProfileInstance.LinearLimit.Restitution = 0.0f;
+	CableBaseConstraint->ConstraintInstance.ProfileInstance.LinearLimit.ContactDistance = 100.0f;
 	CableBaseConstraint->SetConstrainedComponents(CableBase, NAME_None, RescueHook, NAME_None);
 }
 
