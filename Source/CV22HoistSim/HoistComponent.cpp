@@ -45,7 +45,7 @@ UHoistComponent::UHoistComponent() {
 	BaseToHookCable->NumSegments = 70;
 	BaseToHookCable->bEnableStiffness = true;
 	BaseToHookCable->SolverIterations = 16;
-	BaseToHookCable->SubstepTime = 0.01;
+	BaseToHookCable->SubstepTime = 0.005;
 	BaseToHookCable->SetEnableGravity(true);
 	BaseToHookCable->bEnableCollision = true;
 	BaseToHookCable->EndLocation = FVector(0.0f);
@@ -54,6 +54,7 @@ UHoistComponent::UHoistComponent() {
 	BaseToHookCable->bCastDynamicShadow = true;
 	BaseToHookCable->CableWidth = 4.0f;
 	BaseToHookCable->CollisionFriction = 0.05f;
+	BaseToHookCable->bUseSubstepping = true;
 
 	BoomToBaseCable = CreateDefaultSubobject<UCableComponent>(FName("BoomToBaseCable"));
 	BoomToBaseCable->SetupAttachment(BoomHead);
@@ -187,7 +188,7 @@ void UHoistComponent::SetHoistLength(float hoistLength) {
 
 	float hoistOutMinusOffset = HoistOutLength - HoistGrabOffset;
 
-	BaseToHookCable->CableLength = hoistOutMinusOffset - 40.0f;
+	BaseToHookCable->CableLength = hoistOutMinusOffset- 41.0f;
 
 	if (HoistGrabOffset < 1.0f) {
 		BoomToBaseCable->SetVisibility(false);

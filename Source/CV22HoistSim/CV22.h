@@ -7,10 +7,11 @@
 #include "HoistComponent.h"
 #include "RotorComponent.h"
 #include "HoistControlPanel.h"
+#include "CanBeAt.h"
 #include "CV22.generated.h"
 
 UCLASS()
-class CV22HOISTSIM_API ACV22 : public AActor
+class CV22HOISTSIM_API ACV22 : public AActor, public ICanBeAt
 {
 	GENERATED_BODY()
 

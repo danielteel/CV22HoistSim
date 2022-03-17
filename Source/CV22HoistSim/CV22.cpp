@@ -50,9 +50,6 @@ ACV22::ACV22()
 	AircraftNoise->AttenuationOverrides.FalloffDistance = 20000;
 	
 	MovementComponent = CreateDefaultSubobject<UCV22MovementComponent>(FName("MovementComponent"));
-
-
-	Tags.Add(FName("CanBeAt"));
 }
 
 // Called when the game starts or when spawned

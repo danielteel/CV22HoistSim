@@ -10,6 +10,7 @@
 #include "Components/PostProcessComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Kismet/GameplayStatics.h"
+#include "CanBeAt.h"
 #include "CV22.h"
 #include "CV22MovementComponent.h"
 
@@ -81,7 +82,7 @@ void ATailScanner::AffectMoveToNext() {
 
 void ATailScanner::MoveToNextBeAt() {
 	TArray<AActor*> BeAtActors;
-	UGameplayStatics::GetAllActorsOfClassWithTag(this, AActor::StaticClass(), FName("CanBeAt"), BeAtActors);
+	UGameplayStatics::GetAllActorsWithInterface(this, UCanBeAt::StaticClass(), BeAtActors);
 
 	bool useNextActor = false;
 	for (AActor* actor : BeAtActors) {
