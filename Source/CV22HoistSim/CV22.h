@@ -29,6 +29,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CanBeAt")
+	USceneComponent* GetComponentToAttachTo();//Return false if object doesnt want grabbed
+	virtual USceneComponent* GetComponentToAttachTo_Implementation() override;
 
 protected:
 

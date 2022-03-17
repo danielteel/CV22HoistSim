@@ -31,7 +31,7 @@ private:
 	float DiscRadius = 300.0f;
 	float DownwashZeroHeight = 15000.0f;//90 meters=295feet
 	float DownwashRadius = 1500.0f;
-	float DownwashSpeedAtRotors = 2000.0f;
+	float DownwashSpeedAtRotors = 1800.0f;
 	float DownwashMaxGust = 1500.0f;
 	float DownwashCurrentGust = 0.0f;
 	float DownwashSpeedReduceFactor = (DownwashSpeedAtRotors + DownwashMaxGust) / DownwashZeroHeight;

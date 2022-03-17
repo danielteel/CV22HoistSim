@@ -11,8 +11,8 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Kismet/GameplayStatics.h"
 #include "CanBeAt.h"
-#include "CV22.h"
-#include "CV22MovementComponent.h"
+#include "CanBeAtMovementComponent.h"
+#include "HoistComponent.h"
 
 // Sets default values
 ATailScanner::ATailScanner()
@@ -69,9 +69,12 @@ void ATailScanner::BeginPlay()
 	}
 }
 
-void ATailScanner::AffectMoveToNext() {
+void ATailScanner::AffectMoveToNext(AActor* actorToBeAt) {
+	CurrentBeAtActor = actorToBeAt;
 	if (CurrentBeAtActor) {
-		VRRoot->AttachToComponent(CurrentBeAtActor->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("VRPawn"));
+		CurrentBeAtComponent = ICanBeAt::Execute_GetComponentToAttachTo(CurrentBeAtActor);
+		if (!CurrentBeAtComponent) CurrentBeAtComponent = CurrentBeAtActor->GetRootComponent();
+		VRRoot->AttachToComponent(CurrentBeAtComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("VRPawn"));
 	} else {
 		VRRoot->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("VRPawn"));
 	}
@@ -81,31 +84,27 @@ void ATailScanner::AffectMoveToNext() {
 }
 
 void ATailScanner::MoveToNextBeAt() {
-	TArray<AActor*> BeAtActors;
-	UGameplayStatics::GetAllActorsWithInterface(this, UCanBeAt::StaticClass(), BeAtActors);
+	TArray<AActor*> beAtActors;
+	UGameplayStatics::GetAllActorsWithInterface(this, UCanBeAt::StaticClass(), beAtActors);
 
 	bool useNextActor = false;
-	for (AActor* actor : BeAtActors) {
+	for (AActor* actor : beAtActors) {
 		if (CurrentBeAtActor == nullptr) {
-			CurrentBeAtActor = actor;
-			AffectMoveToNext();
+			AffectMoveToNext(actor);
 			return;
 		}
 		if (useNextActor) {
-			CurrentBeAtActor = actor;
-			AffectMoveToNext();
+			AffectMoveToNext(actor);
 			return;
 		}
 		if (CurrentBeAtActor == actor) {
 			useNextActor = true;
 		}
 	}
-	if (BeAtActors.Num()) {
-		CurrentBeAtActor = BeAtActors[0];
-		AffectMoveToNext();
+	if (beAtActors.Num()) {
+		AffectMoveToNext(beAtActors[0]);
 	} else {
-		CurrentBeAtActor = nullptr;
-		AffectMoveToNext();
+		AffectMoveToNext(nullptr);
 	}
 }
 
@@ -166,32 +165,39 @@ void ATailScanner::ReleaseRight() {
 	if (RightController) RightController->ReleaseGrab();
 }
 
-UCV22MovementComponent* ATailScanner::GetCV22MovementComponent() {
-	ACV22* cv22 = Cast<ACV22>(CurrentBeAtActor);
-	if (!cv22) return nullptr;
-	UCV22MovementComponent* movementComponent = Cast<UCV22MovementComponent>(cv22->GetComponentByClass(UCV22MovementComponent::StaticClass()));
+UCanBeAtMovementComponent* ATailScanner::GetCanBeAtMovementComponent() {
+	UCanBeAtMovementComponent* movementComponent = Cast<UCanBeAtMovementComponent>(CurrentBeAtActor->GetComponentByClass(UCanBeAtMovementComponent::StaticClass()));
 	return movementComponent;
 }
 
 void ATailScanner::MoveForward(float amount) {
-	UCV22MovementComponent* movementComponent = GetCV22MovementComponent();
+	UCanBeAtMovementComponent* movementComponent = GetCanBeAtMovementComponent();
 	if (!movementComponent) return;
 	movementComponent->MoveForward(amount);
 }
 void ATailScanner::MoveRight(float amount) {
-	UCV22MovementComponent* movementComponent = GetCV22MovementComponent();
+	UCanBeAtMovementComponent* movementComponent = GetCanBeAtMovementComponent();
 	if (!movementComponent) return;
 	movementComponent->MoveRight(amount);
 }
 void ATailScanner::MoveUp(float amount) {
-	UCV22MovementComponent* movementComponent = GetCV22MovementComponent();
+	UCanBeAtMovementComponent* movementComponent = GetCanBeAtMovementComponent();
 	if (!movementComponent) return;
 	movementComponent->MoveUp(amount);
 }
 void ATailScanner::YawRight(float amount) {
-	UCV22MovementComponent* movementComponent = GetCV22MovementComponent();
+	UCanBeAtMovementComponent* movementComponent = GetCanBeAtMovementComponent();
 	if (!movementComponent) return;
 	movementComponent->YawRight(amount);
+}
+
+void ATailScanner::HoistPower() {
+
+}
+void ATailScanner::HoistUpDown(float amount) {
+	if (!CurrentBeAtActor) return;
+	UHoistComponent* hoist = Cast<UHoistComponent>(CurrentBeAtActor->GetComponentByClass(UHoistComponent::StaticClass()));
+	hoist->Extend(amount);
 }
 
 void ATailScanner::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -209,9 +215,14 @@ void ATailScanner::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction(FName("GrabRight"), EInputEvent::IE_Pressed, this, &ATailScanner::GrabRight);
 	PlayerInputComponent->BindAction(FName("GrabRight"), EInputEvent::IE_Released, this, &ATailScanner::ReleaseRight);
 
+	PlayerInputComponent->BindAction(FName("HoistPower"), EInputEvent::IE_Pressed, this, &ATailScanner::HoistPower);
+
 	PlayerInputComponent->BindAxis(FName("MoveForward"), this, &ATailScanner::MoveForward);
 	PlayerInputComponent->BindAxis(FName("MoveRight"), this, &ATailScanner::MoveRight);
 	PlayerInputComponent->BindAxis(FName("MoveUp"), this, &ATailScanner::MoveUp);
 	PlayerInputComponent->BindAxis(FName("YawRight"), this, &ATailScanner::YawRight);
+
+	PlayerInputComponent->BindAxis(FName("HoistUpDown"), this, &ATailScanner::HoistUpDown);
+	
 }
 

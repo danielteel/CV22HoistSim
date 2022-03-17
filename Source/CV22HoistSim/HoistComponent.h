@@ -74,6 +74,8 @@ private:
 	float ExtendCommand = 0.0f;
 	bool Jettisoned = false;
 
+	FVector LastPosition;
+
 protected:
 	UPROPERTY()
 	class UStaticMeshComponent* AttachedDevice = nullptr;

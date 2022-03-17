@@ -29,6 +29,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	AActor* CurrentBeAtActor = nullptr;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USceneComponent* CurrentBeAtComponent = nullptr;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UTexture* SpectatorTexture = nullptr;
 
@@ -78,12 +81,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReleaseRight();
 
-	class UCV22MovementComponent* GetCV22MovementComponent();
+	class UCanBeAtMovementComponent* GetCanBeAtMovementComponent();
 
 	void MoveForward(float amount);
 	void MoveRight(float amount);
 	void MoveUp(float amount);
 	void YawRight(float amount);
+	
+	void HoistUpDown(float amount);
+	void HoistPower();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -99,5 +105,5 @@ public:
 
 private:
 	FRotator GetAttachedSocketRotation();
-	void AffectMoveToNext();
+	void AffectMoveToNext(AActor* actor);
 };

@@ -45,7 +45,7 @@ UHoistComponent::UHoistComponent() {
 	BaseToHookCable->NumSegments = 70;
 	BaseToHookCable->bEnableStiffness = true;
 	BaseToHookCable->SolverIterations = 16;
-	BaseToHookCable->SubstepTime = 0.005;
+	BaseToHookCable->SubstepTime = 0.01;
 	BaseToHookCable->SetEnableGravity(true);
 	BaseToHookCable->bEnableCollision = true;
 	BaseToHookCable->EndLocation = FVector(0.0f);
@@ -54,7 +54,7 @@ UHoistComponent::UHoistComponent() {
 	BaseToHookCable->bCastDynamicShadow = true;
 	BaseToHookCable->CableWidth = 4.0f;
 	BaseToHookCable->CollisionFriction = 0.05f;
-	BaseToHookCable->bUseSubstepping = true;
+
 
 	BoomToBaseCable = CreateDefaultSubobject<UCableComponent>(FName("BoomToBaseCable"));
 	BoomToBaseCable->SetupAttachment(BoomHead);
@@ -89,6 +89,7 @@ void UHoistComponent::BeginPlay() {
 
 	CableBase->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	CableBase->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	CableBase->SetUseCCD(true);
 
 	RescueHook->SetStaticMesh(RescueHookMesh);
 	RescueHook->SetMassOverrideInKg(NAME_None, 3.0f);
@@ -96,6 +97,7 @@ void UHoistComponent::BeginPlay() {
 	RescueHook->SetUseCCD(true);
 	RescueHook->bCastFarShadow = true;
 	RescueHook->bCastDynamicShadow = true;
+	RescueHook->SetLinearDamping(0.1f);
 
 	CableBaseConstraint->SetWorldLocation(GetComponentLocation());
 	CableBaseConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
@@ -105,6 +107,8 @@ void UHoistComponent::BeginPlay() {
 	CableBaseConstraint->ConstraintInstance.ProfileInstance.LinearLimit.Restitution = 0.0f;
 	CableBaseConstraint->ConstraintInstance.ProfileInstance.LinearLimit.ContactDistance = 100.0f;
 	CableBaseConstraint->SetConstrainedComponents(CableBase, NAME_None, RescueHook, NAME_None);
+
+	LastPosition = GetOwner()->GetActorLocation();
 }
 
 
@@ -178,6 +182,18 @@ void UHoistComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	}
 
 	SetHoistLength(HoistOutLength + extendDistance);
+
+	//Apply wind drag to hook
+	FVector currentActorLocation = GetOwner()->GetActorLocation();
+	FVector velocity = LastPosition - currentActorLocation;
+	FVector simulatedWindDrag = velocity * 90.0f;
+	simulatedWindDrag.Z = 0;
+	if (HoistOutLength > 200.0f) {//Dont apply drag if not out more than 6 feet
+		if (!GetDeviceOnGround()) {//Dont apply if on the ground
+			RescueHook->AddForce(simulatedWindDrag);
+		}
+	}
+	LastPosition = currentActorLocation;
 }
 
 
@@ -188,7 +204,7 @@ void UHoistComponent::SetHoistLength(float hoistLength) {
 
 	float hoistOutMinusOffset = HoistOutLength - HoistGrabOffset;
 
-	BaseToHookCable->CableLength = hoistOutMinusOffset- 41.0f;
+	BaseToHookCable->CableLength = hoistOutMinusOffset- 40.0f;
 
 	if (HoistGrabOffset < 1.0f) {
 		BoomToBaseCable->SetVisibility(false);
@@ -241,8 +257,6 @@ TArray<class UPrimitiveComponent*> UHoistComponent::GetWindAffectableComponents(
 
 
 UPrimitiveComponent* UHoistComponent::GetDeviceOnGround() {
-	URescueHook* rescueHook = Cast<URescueHook>(GetOwner()->GetComponentByClass(URescueHook::StaticClass()));
-	if (!rescueHook) return nullptr;
 
 	if (Jettisoned) return nullptr;
 	UPrimitiveComponent* returnComponent = nullptr;
@@ -250,14 +264,14 @@ UPrimitiveComponent* UHoistComponent::GetDeviceOnGround() {
 	FHitResult hitResult;
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(GetOwner());
-	params.AddIgnoredComponent(rescueHook);
+	params.AddIgnoredComponent(RescueHook);
 
 	FVector start, end;
-	if (rescueHook->GetAttachedDevice()) {
-		params.AddIgnoredComponent(rescueHook->GetAttachedDevice());
-		returnComponent = rescueHook->GetAttachedDevice();
+	if (RescueHook->GetAttachedDevice()) {
+		params.AddIgnoredComponent(RescueHook->GetAttachedDevice());
+		returnComponent = RescueHook->GetAttachedDevice();
 	} else {
-		returnComponent = rescueHook;
+		returnComponent = RescueHook;
 	}
 	start = returnComponent->GetComponentLocation();
 	end = start - FVector::UpVector*HoistMaxLength;
@@ -271,7 +285,7 @@ UPrimitiveComponent* UHoistComponent::GetDeviceOnGround() {
 
 UPrimitiveComponent * UHoistComponent::GetAttachedDevice() {
 	URescueHook* rescueHook = Cast<URescueHook>(GetOwner()->GetComponentByClass(URescueHook::StaticClass()));
-	if (!rescueHook) return nullptr;;
+	if (!rescueHook) return nullptr;
 
 	return rescueHook->GetAttachedDevice();
 }

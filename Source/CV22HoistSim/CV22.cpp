@@ -57,8 +57,8 @@ void ACV22::BeginPlay()
 {
 	Super::BeginPlay();
 	RotorLeft->IsLeftRotor = true;
-	MovementComponent->Setup(Body);
 	Body->SetSimulatePhysics(true);
+	MovementComponent->Setup(Body);
 }
 
 
@@ -86,11 +86,20 @@ void ACV22::UpdateRotorDust(UParticleSystemComponent* dust, FVector rotorPositio
 		dust->Deactivate();
 	}
 }
+USceneComponent* ACV22::GetComponentToAttachTo_Implementation() {
+	return Body;
+}
 
 // Called every frame
 void ACV22::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	Root->SetWorldLocation(Body->GetComponentLocation());
+	FRotator bodyYawRotation = Body->GetComponentRotation();
+	bodyYawRotation.Pitch = 0;
+	bodyYawRotation.Roll = 0;
+	Root->SetWorldRotation(bodyYawRotation);
 
 	UpdateRotorDust(DustLeft, RotorLeft->GetComponentLocation());
 	UpdateRotorDust(DustRight, RotorRight->GetComponentLocation());
