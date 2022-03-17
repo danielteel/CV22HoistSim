@@ -123,8 +123,7 @@ void ACV22::Tick(float DeltaTime)
 				FVector newHCPLocation = rightController->GetComponentLocation();
 				hcp->SetWorldLocation(newHCPLocation);
 				hcp->SetWorldRotation(rightController->GetComponentRotation());
-				FRotator rotOffset = FRotator(0, 90, -45);
-				hcp->AddLocalRotation(rotOffset);
+				hcp->AddLocalRotation(HandControllerOffset);
 				FVector offset = FVector(-4.5f, 5.5f, -16.0f);
 				hcp->AddLocalOffset(offset);
 			}

@@ -42,6 +42,8 @@ public:
 	virtual void LeftActor_Implementation(class APawn* pawn) override;
 
 protected:
+	UPROPERTY(EditAnywhere)
+	FRotator HandControllerOffset = FRotator(0, 270, 45);
 
 	UPROPERTY(VisibleAnywhere)
 	class ATailScanner* TailScannerInsideMe = nullptr;

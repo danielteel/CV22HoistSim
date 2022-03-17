@@ -142,6 +142,15 @@ void ATailScanner::ResetView() {
 void ATailScanner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if (CurrentBeAtActor) {
+		UHoistControlPanel* hcp = Cast<UHoistControlPanel>(CurrentBeAtActor->GetComponentByClass(UHoistControlPanel::StaticClass()));
+		if (hcp) {
+			hcp->SetExtendCommand(HoistExtendIntent);
+		}
+
+		HoistExtendIntent = 0;
+	}
 }
 
 void ATailScanner::ToggleNVGs() {
@@ -211,11 +220,7 @@ void ATailScanner::HoistSetJettison(bool state) {
 	}
 }
 void ATailScanner::HoistSetUpDown(float amount) {
-	if (!CurrentBeAtActor) return;
-	UHoistControlPanel* hcp = Cast<UHoistControlPanel>(CurrentBeAtActor->GetComponentByClass(UHoistControlPanel::StaticClass()));
-	if (hcp) {
-		hcp->SetExtendCommand(amount);
-	}
+	HoistExtendIntent += amount;
 }
 
 void ATailScanner::HoistPower() {//Toggled via whatever input
@@ -223,6 +228,7 @@ void ATailScanner::HoistPower() {//Toggled via whatever input
 	UHoistControlPanel* hcp = Cast<UHoistControlPanel>(CurrentBeAtActor->GetComponentByClass(UHoistControlPanel::StaticClass()));
 	if (hcp) {
 		hcp->SetPowerState(!hcp->GetPowerState());
+		UE_LOG(LogTemp, Warning, TEXT("IM CALLED"))
 	}
 }
 void ATailScanner::HoistJettison() {//Toggled via whatever input

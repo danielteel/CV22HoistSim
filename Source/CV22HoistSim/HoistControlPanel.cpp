@@ -88,6 +88,6 @@ void UHoistControlPanel::SetExtendCommand(float extend) {
 void UHoistControlPanel::SetJettison(bool jettison) {
 	JettisonState = jettison;
 	UHoistComponent* hoist = GetHoistComponent();
-	if (hoist) hoist->JettisonHoist();
+	if (hoist && jettison) hoist->JettisonHoist();
 }
 
