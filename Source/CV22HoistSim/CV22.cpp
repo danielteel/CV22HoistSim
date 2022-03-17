@@ -58,6 +58,7 @@ void ACV22::BeginPlay()
 	Super::BeginPlay();
 	RotorLeft->IsLeftRotor = true;
 	Body->SetSimulatePhysics(true);
+	Body->SetUseCCD(true);
 	MovementComponent->Setup(Body);
 }
 
@@ -90,6 +91,14 @@ USceneComponent* ACV22::GetComponentToAttachTo_Implementation() {
 	return Body;
 }
 
+void ACV22::EnteredActor_Implementation(APawn* pawn) {
+	TailScannerInsideMe = Cast<ATailScanner>(pawn);
+}
+
+void ACV22::LeftActor_Implementation(APawn* pawn) {
+	TailScannerInsideMe = nullptr;
+}
+
 // Called every frame
 void ACV22::Tick(float DeltaTime)
 {
@@ -103,4 +112,28 @@ void ACV22::Tick(float DeltaTime)
 
 	UpdateRotorDust(DustLeft, RotorLeft->GetComponentLocation());
 	UpdateRotorDust(DustRight, RotorRight->GetComponentLocation());
+
+	UHoistControlPanel* hcp = Cast<UHoistControlPanel>(GetComponentByClass(UHoistControlPanel::StaticClass()));
+	if (hcp) {
+		bool wasMovedToHand = false;
+		if (TailScannerInsideMe) {
+			UHandControllerComponent* rightController = TailScannerInsideMe->GetRightController();
+			if (rightController) {
+				wasMovedToHand = true;
+				FVector newHCPLocation = rightController->GetComponentLocation();
+				hcp->SetWorldLocation(newHCPLocation);
+				hcp->SetWorldRotation(rightController->GetComponentRotation());
+				FRotator rotOffset = FRotator(0, 90, -45);
+				hcp->AddLocalRotation(rotOffset);
+				FVector offset = FVector(-4.5f, 5.5f, -16.0f);
+				hcp->AddLocalOffset(offset);
+			}
+		}
+		if (wasMovedToHand == false) {
+			FVector socketLoc;
+			FRotator socketRot;
+			Body->GetSocketWorldLocationAndRotation(FName("HCP"), socketLoc, socketRot);
+			hcp->SetWorldLocationAndRotation(socketLoc, socketRot);
+		}
+	}
 }

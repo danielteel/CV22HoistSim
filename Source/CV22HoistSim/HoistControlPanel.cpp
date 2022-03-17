@@ -50,8 +50,15 @@ void UHoistControlPanel::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 	//Update hoist up/down switch
 	float upDownPitch = -60.0f*ExtendCommand;
-	FRotator upDownRotation = FRotator(upDownPitch, 0.0f, 0.0f);
+	FRotator upDownRotation = FRotator(0.0f, 0.0f, upDownPitch);
 	UpDownMeshComponent->SetRelativeRotation(upDownRotation);
+
+	//Jettison Switch
+	if (JettisonState) {
+		JettisonMeshComponent->SetRelativeRotation(FRotator(90, 0, 0));
+	}else {
+		JettisonMeshComponent->SetRelativeRotation(FRotator(0, 0, 0));
+	}
 
 	if (hoist) {
 		//Send extend command only if power is on
@@ -62,9 +69,7 @@ void UHoistControlPanel::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 		}
 
 		//Set jettison switch state
-		if (hoist->IsJettisoned()) {
-			JettisonMeshComponent->SetRelativeRotation(FRotator(90, 0, 0));
-		}
+		if (JettisonState) hoist->JettisonHoist();
 	}
 }
 
@@ -80,9 +85,9 @@ void UHoistControlPanel::SetExtendCommand(float extend) {
 	ExtendCommand = FMath::Clamp(extend, -1.0f, 1.0f);
 }
 
-void UHoistControlPanel::Jettison() {
+void UHoistControlPanel::SetJettison(bool jettison) {
+	JettisonState = jettison;
 	UHoistComponent* hoist = GetHoistComponent();
-	if (hoist) {
-		hoist->JettisonHoist();
-	}
+	if (hoist) hoist->JettisonHoist();
 }
+

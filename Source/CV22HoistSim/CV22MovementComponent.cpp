@@ -21,12 +21,10 @@ void UCV22MovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 
 	FRotator acRotation = Aircraft->GetRelativeRotation();
-	float yaw = GetOwner()->GetActorRotation().Yaw;
-	FVector CurrentVelocity = Aircraft->GetComponentVelocity();
-	FVector LocalVelocity = GetOwner()->GetActorRotation().UnrotateVector(CurrentVelocity);
+	FVector localVelocity = GetOwner()->GetActorRotation().UnrotateVector(Aircraft->GetComponentVelocity());
 
 
-	FVector Accel = (LastVelocity - LocalVelocity) / DeltaTime;
+	FVector accel = (LastVelocity - localVelocity) / DeltaTime;
 	FVector hoverForce = GetOwner()->GetActorUpVector() * Aircraft->GetMass() * (-GetWorld()->GetGravityZ());
 
 	Aircraft->AddForce(hoverForce);
@@ -36,18 +34,19 @@ void UCV22MovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Aircraft->AddForce(10000000.0f * MoveIntent.Y * GetOwner()->GetActorRightVector());
 
 	float maxPitchRoll = 15.0f;
-	float desiredPitch = FMath::Clamp(Accel.X/1000.0f, -1.0f, 1.0f) * maxPitchRoll;
-	float desiredRoll = FMath::Clamp(Accel.Y/1000.0f, -1.0f, 1.0f) * -maxPitchRoll;
+	float desiredPitch = FMath::Clamp(accel.X/1000.0f, -1.0f, 1.0f) * maxPitchRoll;
+	float desiredRoll = FMath::Clamp(accel.Y/1000.0f, -1.0f, 1.0f) * -maxPitchRoll;
 
 	float pitchDiff = desiredPitch - acRotation.Pitch;
 	float rollDiff = desiredRoll - acRotation.Roll;
 	
-	Roll = Roll + rollDiff * DeltaTime;
-	Pitch = Pitch + pitchDiff * DeltaTime;
-	yaw += MoveIntent.W*DeltaTime*30.0f;
-	Aircraft->SetWorldRotation(FRotator(Pitch, yaw, Roll), true);
+	FVector rotVel = Aircraft->GetUpVector() * 30.0f * DeltaTime * MoveIntent.W;
+	rotVel += Aircraft->GetForwardVector() * 60.f * DeltaTime * (-rollDiff/30.f);
+	rotVel += Aircraft->GetRightVector() * 60.0f * DeltaTime * (-pitchDiff/30.f);
+
+	Aircraft->SetPhysicsAngularVelocityInDegrees(rotVel, true);
 	   	 
-	LastVelocity = LocalVelocity;
+	LastVelocity = localVelocity;
 }
 
 void UCV22MovementComponent::Setup(UPrimitiveComponent* aircraft) {

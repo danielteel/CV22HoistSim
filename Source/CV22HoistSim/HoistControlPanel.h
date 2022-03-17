@@ -21,6 +21,9 @@ protected:
 	class UHoistComponent* GetHoistComponent();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool JettisonState = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool PowerIsOn = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -48,5 +51,5 @@ public:
 	void SetExtendCommand(float extend);
 
 	UFUNCTION(BlueprintCallable)
-	void Jettison();
+	void SetJettison(bool jettison);
 };

@@ -87,9 +87,14 @@ public:
 	void MoveRight(float amount);
 	void MoveUp(float amount);
 	void YawRight(float amount);
+
+	void HoistSetPower(bool on);
+	void HoistSetJettison(bool state);
+	void HoistSetUpDown(float amount);
 	
 	void HoistUpDown(float amount);
 	void HoistPower();
+	void HoistJettison();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

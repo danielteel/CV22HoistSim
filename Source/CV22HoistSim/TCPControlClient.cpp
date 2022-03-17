@@ -32,37 +32,7 @@ void ATCPControlClient::Tick(float deltaTime) {
 
 	if (!isConnected(connectionIdGameServer)) return;
 
-	if (!CV22) {
-		CV22 = Cast<ACV22>(UGameplayStatics::GetActorOfClass(GetWorld(), ACV22::StaticClass()));
-	}
-	if (!CV22) return;
-
-	UHoistComponent* hoistComponent = Cast<UHoistComponent>(CV22->GetComponentByClass(UHoistComponent::StaticClass()));
-	if (!hoistComponent) return;
-
-	float currentTime = GetWorld()->TimeSeconds;
-	if (fabs(lastUpdateTime - currentTime) > updateDelta) {
-		FHitResult hitResult;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(CV22);
-		bool result = GetWorld()->LineTraceSingleByChannel(hitResult, CV22->GetActorLocation(), CV22->GetActorLocation() + (FVector::DownVector * 20000), ECollisionChannel::ECC_PhysicsBody, params);
-		uint8 radalt = 255;
-		if (result) {
-			hitResult.Distance = hitResult.Distance - 205;
-			hitResult.Distance *= 0.0328084f;
-			hitResult.Distance /= 2;
-			if (hitResult.Distance < 0) {
-				radalt = 0;
-			} else if (hitResult.Distance > 254) {
-				radalt = 255;
-			} else {
-				radalt = hitResult.Distance;
-			}
-		}
-		lastUpdateTime = currentTime;
-		uint8 hoistOutLength = hoistComponent->GetHoistOutLength() * 0.0328084f;
-		SendData(connectionIdGameServer, { radalt, hoistOutLength });
-	}
+	UpdateHoistControlPanel();
 }
 
 void ATCPControlClient::OnConnected(int32 ConId) {
@@ -73,20 +43,12 @@ void ATCPControlClient::OnDisconnected(int32 ConId) {
 }
 
 void ATCPControlClient::UpdateHoistControlPanel() {
-	if (!CV22) {
-		CV22 = Cast<ACV22>(UGameplayStatics::GetActorOfClass(GetWorld(), ACV22::StaticClass()));
-	}
-	if (!CV22) return;
+	ATailScanner* tailScanner = Cast<ATailScanner>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+	if (!tailScanner) return;
 
-	UHoistControlPanel* hoistControlPanel = Cast<UHoistControlPanel>(CV22->GetComponentByClass(UHoistControlPanel::StaticClass()));
-	if (!hoistControlPanel) return;
-
-
-	hoistControlPanel->SetExtendCommand(ExtendCommand);
-	hoistControlPanel->SetPowerState(PowerState);
-	if (JettisonState) {
-		hoistControlPanel->Jettison();
-	}
+	tailScanner->HoistSetUpDown(ExtendCommand);
+	tailScanner->HoistSetPower(PowerState);
+	tailScanner->HoistSetJettison(JettisonState);
 }
 
 void ATCPControlClient::OnMessageReceived(int32 ConId, TArray<uint8>& Message) {
@@ -105,5 +67,4 @@ void ATCPControlClient::OnMessageReceived(int32 ConId, TArray<uint8>& Message) {
 			JettisonState = true;
 		}
 	}
-	UpdateHoistControlPanel();
 }

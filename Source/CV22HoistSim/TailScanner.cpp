@@ -12,7 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "CanBeAt.h"
 #include "CanBeAtMovementComponent.h"
-#include "HoistComponent.h"
+#include "HoistControlPanel.h"
 
 // Sets default values
 ATailScanner::ATailScanner()
@@ -70,8 +70,12 @@ void ATailScanner::BeginPlay()
 }
 
 void ATailScanner::AffectMoveToNext(AActor* actorToBeAt) {
+	if (CurrentBeAtActor) {
+		ICanBeAt::Execute_LeftActor(CurrentBeAtActor, this);
+	}
 	CurrentBeAtActor = actorToBeAt;
 	if (CurrentBeAtActor) {
+		ICanBeAt::Execute_EnteredActor(CurrentBeAtActor, this);
 		CurrentBeAtComponent = ICanBeAt::Execute_GetComponentToAttachTo(CurrentBeAtActor);
 		if (!CurrentBeAtComponent) CurrentBeAtComponent = CurrentBeAtActor->GetRootComponent();
 		VRRoot->AttachToComponent(CurrentBeAtComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("VRPawn"));
@@ -191,13 +195,38 @@ void ATailScanner::YawRight(float amount) {
 	movementComponent->YawRight(amount);
 }
 
-void ATailScanner::HoistPower() {
 
-}
-void ATailScanner::HoistUpDown(float amount) {
+void ATailScanner::HoistSetPower(bool on) {
 	if (!CurrentBeAtActor) return;
-	UHoistComponent* hoist = Cast<UHoistComponent>(CurrentBeAtActor->GetComponentByClass(UHoistComponent::StaticClass()));
-	hoist->Extend(amount);
+	UHoistControlPanel* hcp = Cast<UHoistControlPanel>(CurrentBeAtActor->GetComponentByClass(UHoistControlPanel::StaticClass()));
+	if (hcp) {
+		hcp->SetPowerState(on);
+	}
+}
+void ATailScanner::HoistSetJettison(bool state) {
+	if (!CurrentBeAtActor) return;
+	UHoistControlPanel* hcp = Cast<UHoistControlPanel>(CurrentBeAtActor->GetComponentByClass(UHoistControlPanel::StaticClass()));
+	if (hcp) {
+		hcp->SetJettison(state);
+	}
+}
+void ATailScanner::HoistSetUpDown(float amount) {
+	if (!CurrentBeAtActor) return;
+	UHoistControlPanel* hcp = Cast<UHoistControlPanel>(CurrentBeAtActor->GetComponentByClass(UHoistControlPanel::StaticClass()));
+	if (hcp) {
+		hcp->SetExtendCommand(amount);
+	}
+}
+
+void ATailScanner::HoistPower() {//Toggled via whatever input
+	if (!CurrentBeAtActor) return;
+	UHoistControlPanel* hcp = Cast<UHoistControlPanel>(CurrentBeAtActor->GetComponentByClass(UHoistControlPanel::StaticClass()));
+	if (hcp) {
+		hcp->SetPowerState(!hcp->GetPowerState());
+	}
+}
+void ATailScanner::HoistJettison() {//Toggled via whatever input
+	HoistSetJettison(true);
 }
 
 void ATailScanner::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -216,13 +245,14 @@ void ATailScanner::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction(FName("GrabRight"), EInputEvent::IE_Released, this, &ATailScanner::ReleaseRight);
 
 	PlayerInputComponent->BindAction(FName("HoistPower"), EInputEvent::IE_Pressed, this, &ATailScanner::HoistPower);
+	PlayerInputComponent->BindAction(FName("HoistJettison"), EInputEvent::IE_Pressed, this, &ATailScanner::HoistJettison);
 
 	PlayerInputComponent->BindAxis(FName("MoveForward"), this, &ATailScanner::MoveForward);
 	PlayerInputComponent->BindAxis(FName("MoveRight"), this, &ATailScanner::MoveRight);
 	PlayerInputComponent->BindAxis(FName("MoveUp"), this, &ATailScanner::MoveUp);
 	PlayerInputComponent->BindAxis(FName("YawRight"), this, &ATailScanner::YawRight);
 
-	PlayerInputComponent->BindAxis(FName("HoistUpDown"), this, &ATailScanner::HoistUpDown);
+	PlayerInputComponent->BindAxis(FName("HoistUpDown"), this, &ATailScanner::HoistSetUpDown);
 	
 }
 

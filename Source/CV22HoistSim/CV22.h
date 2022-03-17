@@ -30,10 +30,21 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CanBeAt")
-	USceneComponent* GetComponentToAttachTo();//Return false if object doesnt want grabbed
+	USceneComponent* GetComponentToAttachTo();
 	virtual USceneComponent* GetComponentToAttachTo_Implementation() override;
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CanBeAt")
+	void EnteredActor(class APawn* pawn);
+	virtual void EnteredActor_Implementation(class APawn* pawn) override;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CanBeAt")
+	void LeftActor(class APawn* pawn);
+	virtual void LeftActor_Implementation(class APawn* pawn) override;
+
 protected:
+
+	UPROPERTY(VisibleAnywhere)
+	class ATailScanner* TailScannerInsideMe = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class USceneComponent* Root = nullptr;

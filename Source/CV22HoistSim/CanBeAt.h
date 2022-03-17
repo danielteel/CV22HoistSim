@@ -25,4 +25,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CanBeAt")
 	USceneComponent* GetComponentToAttachTo();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CanBeAt")
+	void EnteredActor(class APawn* pawn);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "CanBeAt")
+	void LeftActor(class APawn* pawn);
+
 };
