@@ -23,10 +23,6 @@
 		{
 			"Name": "Text3D",
 			"Enabled": true
-		},
-		{
-			"Name": "RawInput",
-			"Enabled": true
 		}
 	]
 }
