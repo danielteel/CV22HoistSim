@@ -19,6 +19,9 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void HighlightGrabbable();
+
+	UPrimitiveComponent * GetComponentToGrab();
 
 	UFUNCTION(BlueprintCallable, Category = "Setup")
 	void SetOtherHand(UHandControllerComponent * Hand);
@@ -36,6 +39,12 @@ public:
 	bool GetEnabled() { return Enabled; }
 
 protected:
+	UPROPERTY(EditDefaultsOnly, Category="Highlight")
+	UMaterial* HighlightMaterial = nullptr;
+
+	UPROPERTY()
+	UStaticMeshComponent* HighlightStaticMesh = nullptr;
+
 	UPROPERTY(EditAnywhere)
 	float GrabDistance = 30.0f;
 
@@ -46,5 +55,5 @@ protected:
 	UHandControllerComponent* OtherHand = nullptr;
 
 	UPROPERTY()
-	class UPrimitiveComponent* GrabbedComponent = nullptr;
+	class USceneComponent* GrabbedComponent = nullptr;
 };

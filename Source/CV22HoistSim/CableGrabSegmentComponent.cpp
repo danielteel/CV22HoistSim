@@ -16,24 +16,19 @@ UCableGrabSegmentComponent::UCableGrabSegmentComponent() {
 
 void UCableGrabSegmentComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
 }
 
-bool UCableGrabSegmentComponent::GrabStart_Implementation(UPrimitiveComponent * hand) {
-	UCableGrabComponent* owner = Cast<UCableGrabComponent>(GetAttachParent());
-	if (owner) {
-		owner->Grab(hand);
-	}
-	return true;
+
+USceneComponent* UCableGrabSegmentComponent::GetComponentToGrab_Implementation() {
+	return Cast<UCableGrabComponent>(GetAttachParent());
 }
 
-bool UCableGrabSegmentComponent::GrabEnd_Implementation(UPrimitiveComponent * hand) {
-	UCableGrabComponent* owner = Cast<UCableGrabComponent>(GetAttachParent());
-	if (owner) {
-		owner->Release();
-	}
-	return true;
+void UCableGrabSegmentComponent::GrabStart_Implementation(UPrimitiveComponent * hand) {
 }
 
-bool UCableGrabSegmentComponent::GrabEvent_Implementation(UPrimitiveComponent * hand, bool buttonPressed, float xAxis, float yAxis) {
-	return true;
+void UCableGrabSegmentComponent::GrabEnd_Implementation(UPrimitiveComponent * hand) {
+}
+
+void UCableGrabSegmentComponent::GrabEvent_Implementation(UPrimitiveComponent * hand, bool buttonPressed, float xAxis, float yAxis) {
 }

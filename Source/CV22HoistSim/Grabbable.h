@@ -16,12 +16,16 @@ class CV22HOISTSIM_API IGrabbable {
 
 public:
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable")
-	bool GrabStart(class UPrimitiveComponent* hand);//Return false if object doesnt want grabbed
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable")
-	bool GrabEnd(class UPrimitiveComponent* hand);
+	USceneComponent* GetComponentToGrab();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable")
-	bool GrabEvent(class UPrimitiveComponent* hand, bool buttonPressed, float xAxis, float yAxis);
+	void GrabStart(class UPrimitiveComponent* hand);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable")
+	void GrabEnd(class UPrimitiveComponent* hand);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable")
+	void GrabEvent(class UPrimitiveComponent* hand, bool buttonPressed, float xAxis, float yAxis);
 };

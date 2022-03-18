@@ -54,7 +54,6 @@ void ATailScanner::BeginPlay()
 		PostProcessComponent->AddOrUpdateBlendable(NVGMaterialInstance, 0.0f);
 	}
 
-	RightController->SetEnabled(false);
 	MoveToNextBeAt();
 	ResetView();
 
@@ -228,7 +227,6 @@ void ATailScanner::HoistPower() {//Toggled via whatever input
 	UHoistControlPanel* hcp = Cast<UHoistControlPanel>(CurrentBeAtActor->GetComponentByClass(UHoistControlPanel::StaticClass()));
 	if (hcp) {
 		hcp->SetPowerState(!hcp->GetPowerState());
-		UE_LOG(LogTemp, Warning, TEXT("IM CALLED"))
 	}
 }
 void ATailScanner::HoistJettison() {//Toggled via whatever input

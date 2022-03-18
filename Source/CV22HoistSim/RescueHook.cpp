@@ -40,20 +40,19 @@ void URescueHook::TickComponent(float DeltaTime, ELevelTick TickType, FActorComp
 	WakeRigidBody();
 }
 
-bool URescueHook::GrabStart_Implementation(UPrimitiveComponent * hand) {
+USceneComponent* URescueHook::GetComponentToGrab_Implementation() {
+	return this;
+}
+void URescueHook::GrabStart_Implementation(UPrimitiveComponent * hand) {
 	GrabComponent->GrabComponent(this, NAME_None, this->GetComponentLocation(), false);
-	return true;
 }
-
-bool URescueHook::GrabEnd_Implementation(UPrimitiveComponent * hand) {
+void URescueHook::GrabEnd_Implementation(UPrimitiveComponent * hand) {
 	GrabComponent->ReleaseComponent();
-	return true;
+}
+void URescueHook::GrabEvent_Implementation(UPrimitiveComponent * hand, bool buttonPressed, float xAxis, float yAxis) {
+	GrabComponent->SetTargetLocation(hand->GetComponentLocation());
 }
 
-bool URescueHook::GrabEvent_Implementation(UPrimitiveComponent * hand, bool buttonPressed, float xAxis, float yAxis) {
-	GrabComponent->SetTargetLocation(hand->GetComponentLocation());
-	return true;
-}
 
 void URescueHook::Attach(UPrimitiveComponent* device) {
 	GrabComponent->ReleaseComponent();//Release the grab if we be grabbed

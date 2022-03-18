@@ -28,17 +28,21 @@ private:
 
 	class UPrimitiveComponent* AttachedDevice = nullptr;
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable")
-		bool GrabStart(class UPrimitiveComponent* hand);//Return false if object doesnt want grabbed
-	virtual bool GrabStart_Implementation(class UPrimitiveComponent* hand) override;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Grabbable")
+		USceneComponent* GetComponentToGrab();
+	virtual USceneComponent* GetComponentToGrab_Implementation() override;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable")
-		bool GrabEnd(class UPrimitiveComponent* hand);
-	virtual bool GrabEnd_Implementation(class UPrimitiveComponent* hand) override;
+		void GrabStart(class UPrimitiveComponent* hand);
+	virtual void GrabStart_Implementation(class UPrimitiveComponent* hand) override;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable")
-		bool GrabEvent(class UPrimitiveComponent* hand, bool buttonPressed, float upDown, float leftRight);
-	virtual bool GrabEvent_Implementation(class UPrimitiveComponent* hand, bool buttonPressed, float xAxis, float yAxis) override;
+		void GrabEnd(class UPrimitiveComponent* hand);
+	virtual void GrabEnd_Implementation(class UPrimitiveComponent* hand) override;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable")
+		void GrabEvent(class UPrimitiveComponent* hand, bool buttonPressed, float upDown, float leftRight);
+	virtual void GrabEvent_Implementation(class UPrimitiveComponent* hand, bool buttonPressed, float xAxis, float yAxis) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Rescue Hook")
 		void Attach(UPrimitiveComponent * device);

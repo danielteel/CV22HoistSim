@@ -67,12 +67,20 @@ bool UCableGrabComponent::IsGrabbed() {
 	return Grabbed;
 }
 
-void UCableGrabComponent::Grab(UPrimitiveComponent* hand) {
+
+USceneComponent* UCableGrabComponent::GetComponentToGrab_Implementation() {
+	return this;
+}
+
+void UCableGrabComponent::GrabStart_Implementation(UPrimitiveComponent * hand) {
 	Grabbed = true;
 	GrabbedHand = hand;
 }
 
-void UCableGrabComponent::Release() {
+void UCableGrabComponent::GrabEnd_Implementation(UPrimitiveComponent * hand) {
 	Grabbed = false;
 	GrabbedHand = nullptr;
+}
+
+void UCableGrabComponent::GrabEvent_Implementation(UPrimitiveComponent * hand, bool buttonPressed, float xAxis, float yAxis) {
 }

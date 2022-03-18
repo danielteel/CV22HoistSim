@@ -11,6 +11,10 @@
 UHandControllerComponent::UHandControllerComponent() {
 	PrimaryComponentTick.bCanEverTick = true;
 
+	HighlightStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("HighlightStaticMesh"));
+	HighlightStaticMesh->SetupAttachment(this);
+	HighlightStaticMesh->SetVisibility(false);
+
 	SetShowDeviceModel(true);
 }
 void UHandControllerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
@@ -18,6 +22,8 @@ void UHandControllerComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	if (GrabbedComponent) {
 		IGrabbable::Execute_GrabEvent(GrabbedComponent, this, 0, 0, 0);
+	} else {
+		HighlightGrabbable();
 	}
 }
 
@@ -32,38 +38,69 @@ void UHandControllerComponent::SetEnabled(bool enabled) {
 	}
 }
 
-void UHandControllerComponent::Grab() {
-	if (!Enabled) return;
+void UHandControllerComponent::HighlightGrabbable() {
+	UStaticMeshComponent* componentToHighlight = Cast<UStaticMeshComponent>(GetComponentToGrab());
+
+	if (componentToHighlight) {
+		HighlightStaticMesh->SetStaticMesh(componentToHighlight->GetStaticMesh());
+		HighlightStaticMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		HighlightStaticMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+		int32 numMaterials = componentToHighlight->GetNumMaterials();
+		for (int i = 0; i < numMaterials; i++) {
+			HighlightStaticMesh->SetMaterial(i, HighlightMaterial);
+		}
+
+		HighlightStaticMesh->SetVisibility(true);
+		HighlightStaticMesh->SetWorldLocationAndRotation(componentToHighlight->GetComponentLocation(), componentToHighlight->GetComponentRotation());
+		HighlightStaticMesh->SetWorldScale3D(componentToHighlight->GetComponentScale()+FVector(0.05f,0.05f,0.05f));
+	} else {
+		HighlightStaticMesh->SetVisibility(false);
+	}
+}
+
+UPrimitiveComponent* UHandControllerComponent::GetComponentToGrab() {
+	if (!Enabled) return nullptr;
 	TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
 	TArray<AActor*> actorsToIgnore;
 	TArray<UPrimitiveComponent*> outComponents;
 
-	FVector HandLocation = GetComponentLocation();
-	bool result = UKismetSystemLibrary::SphereOverlapComponents(GetWorld(), HandLocation, GrabDistance, objectTypes, nullptr, actorsToIgnore, outComponents);
-	if (result) {
+	UPrimitiveComponent* componentToGrab = nullptr;
 
-		UPrimitiveComponent* componentToGrab = nullptr;
+	FVector handLocation = GetComponentLocation();
+
+	bool result = UKismetSystemLibrary::SphereOverlapComponents(GetWorld(), handLocation, GrabDistance, objectTypes, nullptr, actorsToIgnore, outComponents);
+	if (result) {
 		float distanceToGrab = 0.0f;
 		for (int i = 0; i < outComponents.Num(); i++) {
 			IGrabbable* grabbableObject = Cast<IGrabbable>(outComponents[i]);
 			if (grabbableObject) {
 
-				float distToObj = FVector::Dist(HandLocation, outComponents[i]->GetComponentLocation());
+				float distToObj = FVector::Dist(handLocation, outComponents[i]->GetComponentLocation());
 				if (distToObj < distanceToGrab || componentToGrab == nullptr) {
 					componentToGrab = outComponents[i];
 					distanceToGrab = distToObj;
 				}
 			}
 		}
+	}
+	return componentToGrab;
+}
 
-		if (componentToGrab) {
-			if (OtherHand) {
-				if (OtherHand->GrabbedComponent == componentToGrab) OtherHand->ReleaseGrab();
-			}
-			if (IGrabbable::Execute_GrabStart(componentToGrab, this)) {
-				GrabbedComponent = componentToGrab;
-			}
+
+void UHandControllerComponent::Grab() {
+	if (!Enabled) return;
+	
+	USceneComponent* componentToGrab = GetComponentToGrab();
+	if (componentToGrab) {
+		componentToGrab = IGrabbable::Execute_GetComponentToGrab(componentToGrab);
+
+		HighlightStaticMesh->SetVisibility(false);
+		if (OtherHand) {
+			if (OtherHand->GrabbedComponent == componentToGrab) OtherHand->ReleaseGrab();
 		}
+		IGrabbable::Execute_GrabStart(componentToGrab, this);
+		GrabbedComponent = componentToGrab;
 	}
 }
 
