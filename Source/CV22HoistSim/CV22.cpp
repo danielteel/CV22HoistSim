@@ -6,6 +6,7 @@
 #include "HoistControlPanel.h"
 #include "HoistComponent.h"
 #include "TailScanner.h"
+#include "RescueHook.h"
 #include "RotorComponent.h"
 #include "HandControllerComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -13,6 +14,7 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Components/AudioComponent.h"
 #include "DrawDebugHelpers.h"
+#include "CableGrabComponent.h"
 #include "CV22MovementComponent.h"
 
 // Sets default values
@@ -47,7 +49,7 @@ ACV22::ACV22()
 	AircraftNoise->bOverrideAttenuation = true;
 	AircraftNoise->bAllowSpatialization = true;
 	AircraftNoise->AttenuationOverrides.AttenuationShapeExtents = FVector(3000, 0, 0);
-	AircraftNoise->AttenuationOverrides.FalloffDistance = 20000;
+	AircraftNoise->AttenuationOverrides.FalloffDistance = 40000;
 	
 	MovementComponent = CreateDefaultSubobject<UCV22MovementComponent>(FName("MovementComponent"));
 }
@@ -96,6 +98,18 @@ void ACV22::EnteredActor_Implementation(APawn* pawn) {
 }
 
 void ACV22::LeftActor_Implementation(APawn* pawn) {
+	UHandControllerComponent* leftController = TailScannerInsideMe->GetLeftController();
+	UHandControllerComponent* rightController = TailScannerInsideMe->GetRightController();
+	UHoistComponent* hoist = Cast<UHoistComponent>(GetComponentByClass(UHoistComponent::StaticClass()));
+	if (!hoist) return;
+	if (leftController) {
+		USceneComponent* grabbed = leftController->GetGrabbedComponent();
+		if (grabbed == hoist->RescueHook || grabbed == hoist->CableGrabber) leftController->ReleaseGrab();
+	}
+	if (rightController) {
+		USceneComponent* grabbed = rightController->GetGrabbedComponent();
+		if (grabbed == hoist->RescueHook || grabbed == hoist->CableGrabber) rightController->ReleaseGrab();
+	}
 	TailScannerInsideMe = nullptr;
 }
 

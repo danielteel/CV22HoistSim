@@ -51,6 +51,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 		class UPrimitiveComponent* GetDeviceOnGround();
 
+	UPROPERTY(VisibleAnywhere)
+		class UCableGrabComponent* CableGrabber = nullptr;
+
+	URescueHook* RescueHook = nullptr;
 private:
 	void FixStuckCable();
 	void UpdateCableGrab(float deltaTime);
@@ -87,7 +91,6 @@ protected:
 	class UStaticMesh* BoomHeadMesh = nullptr;
 
 	UStaticMeshComponent* BoomHead = nullptr;
-	URescueHook* RescueHook = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* CableBase = nullptr;
@@ -98,8 +101,6 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	class UCableComponent* BoomToBaseCable = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
-	class UCableGrabComponent* CableGrabber = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
 	class UPhysicsConstraintComponent* CableBaseConstraint = nullptr;

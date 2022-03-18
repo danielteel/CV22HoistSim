@@ -21,6 +21,9 @@ protected:
 
 	FRotator InitialRotation;
 
+	UPROPERTY()
+	class ULever* Owner = nullptr;
+
 	float MinPitch = 0;
 	float MaxPitch = 0;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
@@ -29,7 +32,7 @@ protected:
 	void SetPitch(float pitch);
 public:
 	void SetValue(float value);
-	void Setup(float minPitch, float maxPitch, float initialValue);
+	void Setup(float minPitch, float maxPitch, float initialValue, class ULever* owner);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable") USceneComponent* GetComponentToGrab();
 	virtual USceneComponent* GetComponentToGrab_Implementation() override;

@@ -38,6 +38,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Status")
 	bool GetEnabled() { return Enabled; }
 
+	UFUNCTION(BlueprintCallable, Category = "Hand")
+	USceneComponent* GetGrabbedComponent() { return GrabbedComponent; }
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Highlight")
 	UMaterial* HighlightMaterial = nullptr;

@@ -13,9 +13,10 @@ void ULeverHandle::BeginPlay() {
 	InitialRotation = GetRelativeRotation();
 }
 
-void ULeverHandle::Setup(float minPitch, float maxPitch, float initialValue) {
+void ULeverHandle::Setup(float minPitch, float maxPitch, float initialValue, ULever* owner) {
 	MinPitch = minPitch;
 	MaxPitch = maxPitch;
+	Owner = owner;
 	SetValue(initialValue);
 }
 
@@ -37,10 +38,9 @@ void ULeverHandle::GrabStart_Implementation(UPrimitiveComponent * hand) {
 }
 
 void ULeverHandle::GrabEnd_Implementation(UPrimitiveComponent * hand) {
-	ULever* owner = Cast<ULever>(GetOwner());
-	if (owner) {
-		float val = (MaxPitch - CurrentPitch) / (MaxPitch - MinPitch);
-		owner->LeverWasSet(val);
+	if (Owner) {
+		float val = 1.0f - (MaxPitch - CurrentPitch) / (MaxPitch - MinPitch);
+		Owner->LeverWasSet(val);
 	}
 }
 
