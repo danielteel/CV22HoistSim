@@ -21,14 +21,15 @@ protected:
 
 	FRotator InitialRotation;
 
-	float MinPitch = -80;
-	float MaxPitch = 80;
+	float MinPitch = 0;
+	float MaxPitch = 0;
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	float CurrentPitch = 0;
 
 	void SetPitch(float pitch);
 public:
 	void SetValue(float value);
+	void Setup(float minPitch, float maxPitch, float initialValue);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable") USceneComponent* GetComponentToGrab();
 	virtual USceneComponent* GetComponentToGrab_Implementation() override;

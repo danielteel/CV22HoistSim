@@ -18,6 +18,7 @@ ULever::ULever()
 
 	LeverHandleComponent = CreateDefaultSubobject<ULeverHandle>(FName("Handle"));
 	LeverHandleComponent->SetupAttachment(BaseMeshComponent, FName("Lever"));
+	LeverHandleComponent->Setup(MinPitch, MaxPitch, 0.0f);
 }
 
 
@@ -25,8 +26,6 @@ ULever::ULever()
 void ULever::BeginPlay()
 {
 	Super::BeginPlay();
-	CurrentLeverValue = 1.0;
-	LeverHandleComponent->SetValue(1.0f);
 }
 
 
@@ -36,7 +35,21 @@ void ULever::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponent
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+void ULever::SetLeverValue(int value) {
+	value = FMath::Clamp(value, 0, Positions);
+	float leverAlpha = float(value) / (float(Positions) - 1);
+	CurrentValue = value;
+	LeverHandleComponent->SetValue(leverAlpha);
+	OnLeverWasChanged.Broadcast(CurrentValue);
+}
 
-void ULever::LeverSetToValue(float value) {
+void ULever::LeverWasSet(float value) {
+	float delta = MaxPitch - MinPitch;
+	float divider = delta / float(Positions);
+	int step = FMath::Floor((value * delta) / Positions);
+	float leverAlpha = float(step) / (float(Positions) - 1);
+	CurrentValue = step;
+	LeverHandleComponent->SetValue(leverAlpha);
 
+	OnLeverWasChanged.Broadcast(CurrentValue);
 }

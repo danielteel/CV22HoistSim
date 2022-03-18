@@ -7,6 +7,9 @@
 #include "Lever.generated.h"
 
 
+UDELEGATE(BlueprintAuthorityOnly)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FLeverWasChanged, int, value);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CV22HOISTSIM_API ULever : public USceneComponent
 {
@@ -16,6 +19,9 @@ public:
 	// Sets default values for this component's properties
 	ULever();
 
+
+	UPROPERTY(BlueprintAssignable)
+	FLeverWasChanged OnLeverWasChanged;
 
 protected:
 	// Called when the game starts
@@ -32,15 +38,17 @@ protected:
 	int Positions = 2;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int CurrentPosition = 0;
-	float CurrentLeverValue = 0;
+	int CurrentValue = 0;
+
+	float MinPitch = -80;
+	float MaxPitch = 80;
 
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void LeverSetToValue(float value);
+	void LeverWasSet(float value);
 
 	UFUNCTION(BlueprintCallable)
-	float GetLeverValue() { return CurrentLeverValue; }
+	void SetLeverValue(int value);
 };
