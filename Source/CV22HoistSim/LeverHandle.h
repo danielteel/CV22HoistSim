@@ -19,18 +19,10 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	FRotator InitialRotation;
-
-	UPROPERTY()
-	class ULever* Owner = nullptr;
-
-	float MinPitch = 0;
-	float MaxPitch = 0;
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	float CurrentPitch = 0;
-
-	void SetPitch(float pitch);
 public:
+	ULeverHandle();
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	void SetValue(float value);
 	void Setup(float minPitch, float maxPitch, float initialValue, class ULever* owner);
 
@@ -45,4 +37,20 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable") void GrabEvent(class UPrimitiveComponent* hand, bool buttonPressed, float upDown, float leftRight);
 	virtual void GrabEvent_Implementation(class UPrimitiveComponent* hand, bool buttonPressed, float xAxis, float yAxis) override;
+
+private:
+	FRotator InitialRotation;
+
+	UPROPERTY()
+	class ULever* Owner = nullptr;
+
+	FVector GrabOffset;
+
+	float MinPitch = 0;
+	float MaxPitch = 0;
+
+
+	float CurrentPitch = 0;
+	float TargetPitch = 0;
+	float PitchAnimSpeed = 500.0f;
 };

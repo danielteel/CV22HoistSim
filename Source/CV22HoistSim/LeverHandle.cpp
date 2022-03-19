@@ -7,6 +7,10 @@
 #include "Lever.h"
 
 // Called when the game starts
+
+ULeverHandle::ULeverHandle() {
+	PrimaryComponentTick.bCanEverTick = true;
+}
 void ULeverHandle::BeginPlay() {
 	Super::BeginPlay();
 
@@ -17,17 +21,32 @@ void ULeverHandle::Setup(float minPitch, float maxPitch, float initialValue, ULe
 	MinPitch = minPitch;
 	MaxPitch = maxPitch;
 	Owner = owner;
-	SetValue(initialValue);
+
+	CurrentPitch = FMath::Lerp(MinPitch, MaxPitch, initialValue);
+	TargetPitch = FMath::Lerp(MinPitch, MaxPitch, initialValue);
+	SetRelativeRotation(FRotator(CurrentPitch, 0.0f, 0.0f));
 }
 
-void ULeverHandle::SetPitch(float pitch) {
-	pitch = FMath::Clamp(pitch, MinPitch, MaxPitch);
-	SetRelativeRotation(FRotator(pitch, 0.0f, 0.0f));
-	CurrentPitch = pitch;
+
+void ULeverHandle::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	float pitchDelta = CurrentPitch - TargetPitch;
+	if (!FMath::IsNearlyZero(pitchDelta)) {
+		float moveAmount = pitchDelta > 0 ? -PitchAnimSpeed * DeltaTime : PitchAnimSpeed * DeltaTime;
+
+		if (FMath::Abs(moveAmount) > FMath::Abs(pitchDelta)) {
+			moveAmount = FMath::Abs(pitchDelta)*FMath::Sign(moveAmount);
+		}
+
+		CurrentPitch += moveAmount;
+
+		SetRelativeRotation(FRotator(CurrentPitch, 0.0f, 0.0f));
+	}
 }
 
 void ULeverHandle::SetValue(float value) {
-	SetPitch(FMath::Lerp(MinPitch, MaxPitch, value));
+	TargetPitch = FMath::Lerp(MinPitch, MaxPitch, value);
 }
 
 USceneComponent* ULeverHandle::GetComponentToGrab_Implementation() {
@@ -35,6 +54,7 @@ USceneComponent* ULeverHandle::GetComponentToGrab_Implementation() {
 }
 
 void ULeverHandle::GrabStart_Implementation(UPrimitiveComponent * hand) {
+	GrabOffset = GetSocketLocation(FName("Handle")) - hand->GetComponentLocation();
 }
 
 void ULeverHandle::GrabEnd_Implementation(UPrimitiveComponent * hand) {
@@ -45,9 +65,11 @@ void ULeverHandle::GrabEnd_Implementation(UPrimitiveComponent * hand) {
 }
 
 void ULeverHandle::GrabEvent_Implementation(UPrimitiveComponent * hand, bool buttonPressed, float xAxis, float yAxis) {
-	FVector inverseTransform = UKismetMathLibrary::InverseTransformLocation(GetAttachParent()->GetComponentTransform(), hand->GetComponentLocation());
+	FVector inverseTransform = UKismetMathLibrary::InverseTransformLocation(GetAttachParent()->GetComponentTransform(), hand->GetComponentLocation()+GrabOffset);
 	FVector unrotatedVector = FRotator(90.f, 0.0f, 0.0f).UnrotateVector(inverseTransform);
-	float value = UKismetMathLibrary::Atan2(unrotatedVector.Z, unrotatedVector.X);
-
-	SetPitch(FMath::RadiansToDegrees(value));
+	float pitch = FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(unrotatedVector.Z, unrotatedVector.X));
+	pitch = FMath::Clamp(pitch, MinPitch, MaxPitch);
+	CurrentPitch = pitch;
+	TargetPitch = pitch;
+	SetRelativeRotation(FRotator(pitch, 0.0f, 0.0f));
 }

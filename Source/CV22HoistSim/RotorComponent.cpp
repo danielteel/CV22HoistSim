@@ -13,6 +13,8 @@
 #include "Engine/StaticMesh.h"
 #include "PhysicsEngine/BodyInstance.h"
 #include "GameFramework/PhysicsVolume.h"
+#include "CV22HoistSimGameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 
 URotorComponent::URotorComponent() {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -47,6 +49,8 @@ FVector URotorComponent::GetWindForce(UPrimitiveComponent* component, FVector wi
 void URotorComponent::ApplyWindForces() {
 	UHoistComponent* hoist = GetHoistComponent();
 	if (!hoist) return;
+	ACV22HoistSimGameModeBase* gameMode = Cast<ACV22HoistSimGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!gameMode) return;
 
 
 	FCollisionQueryParams params;
@@ -122,7 +126,7 @@ void URotorComponent::ApplyWindForces() {
 			if (!FMath::IsNearlyEqual(componentForceSigns.Y, currentForceSigns.Y)) currentForce.Y = 0.0f;
 			if (!FMath::IsNearlyEqual(componentForceSigns.Z, currentForceSigns.Z)) currentForce.Z = 0.0f;
 			componentForce[i] = (componentForce[i] - currentForce) / 1.5f;
-			windAffectableComponents[i]->AddForce(componentForce[i]);
+			windAffectableComponents[i]->AddForce(componentForce[i] * gameMode->KickFactor);
 		}
 	}
 

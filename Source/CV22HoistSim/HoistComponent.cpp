@@ -290,6 +290,9 @@ UPrimitiveComponent * UHoistComponent::GetAttachedDevice() {
 	return rescueHook->GetAttachedDevice();
 }
 
+bool UHoistComponent::IsAHoistGrabbableComponent(USceneComponent* component) { 
+	return (component == RescueHook || component == CableGrabber);
+}
 
 
 void UHoistComponent::FixStuckCable() {

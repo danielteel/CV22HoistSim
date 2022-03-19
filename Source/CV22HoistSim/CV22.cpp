@@ -14,8 +14,8 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Components/AudioComponent.h"
 #include "DrawDebugHelpers.h"
-#include "CableGrabComponent.h"
 #include "CV22MovementComponent.h"
+#include "CV22HoistSimGameModeBase.h"
 
 // Sets default values
 ACV22::ACV22()
@@ -28,6 +28,7 @@ ACV22::ACV22()
 
 	Body = CreateDefaultSubobject<UStaticMeshComponent>(FName("Body"));
 	Body->SetupAttachment(Root);
+	Body->SetMassOverrideInKg(NAME_None, 18143.0f, true);
 
 	RotorLeft = CreateDefaultSubobject<URotorComponent>(FName("RotorLeft"));
 	RotorLeft->SetupAttachment(Body, FName("RotorLeft"));
@@ -40,6 +41,7 @@ ACV22::ACV22()
 	DustLeft->SetupAttachment(RotorLeft);
 	DustLeft->bAutoActivate = false;
 	
+	
 	DustRight = CreateDefaultSubobject<UParticleSystemComponent>(FName("DustRight"));
 	DustRight->SetupAttachment(RotorRight);
 	DustRight->bAutoActivate = false;
@@ -48,8 +50,12 @@ ACV22::ACV22()
 	AircraftNoise->SetupAttachment(Body);
 	AircraftNoise->bOverrideAttenuation = true;
 	AircraftNoise->bAllowSpatialization = true;
-	AircraftNoise->AttenuationOverrides.AttenuationShapeExtents = FVector(3000, 0, 0);
-	AircraftNoise->AttenuationOverrides.FalloffDistance = 40000;
+	AircraftNoise->AttenuationOverrides.AttenuationShapeExtents = FVector(4000.0f, 0.0f, 0.0f);
+	AircraftNoise->AttenuationOverrides.FalloffDistance = 60000.0f;
+	AircraftNoise->AttenuationOverrides.DistanceAlgorithm = EAttenuationDistanceModel::NaturalSound;
+	AircraftNoise->AttenuationOverrides.dBAttenuationAtMax = -29.0f;
+	AircraftNoise->AttenuationOverrides.bEnableOcclusion = true;
+	AircraftNoise->AttenuationOverrides.OcclusionLowPassFilterFrequency = 2500.0f;
 	
 	MovementComponent = CreateDefaultSubobject<UCV22MovementComponent>(FName("MovementComponent"));
 }
@@ -66,6 +72,10 @@ void ACV22::BeginPlay()
 
 
 void ACV22::UpdateRotorDust(UParticleSystemComponent* dust, FVector rotorPosition) {
+
+	ACV22HoistSimGameModeBase* gameMode = Cast<ACV22HoistSimGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!gameMode) return;
+
 	FHitResult hitResult;
 	FVector traceStart = rotorPosition;
 	FVector traceEnd = traceStart  + -Body->GetUpVector() * 6500.0f;
@@ -83,7 +93,7 @@ void ACV22::UpdateRotorDust(UParticleSystemComponent* dust, FVector rotorPositio
 	if (sweepSuccess && hitResult.PhysMaterial!=nullptr && hitResult.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1) {
 		if (!dust->IsActive()) dust->Activate();
 		dust->SetWorldLocation(hitResult.ImpactPoint);
-		float dustSpawnRate = FMath::Clamp(1.0f-((hitResult.Distance-2048.0f) / 4452.0f), 0.0f, 1.0f);
+		float dustSpawnRate = FMath::Clamp(1.0f-((hitResult.Distance-2048.0f) / 4452.0f), 0.0f, 1.0f)*gameMode->DustFactor;
 		dust->SetFloatParameter("Amount", dustSpawnRate);
 	} else {
 		dust->Deactivate();
@@ -98,17 +108,16 @@ void ACV22::EnteredActor_Implementation(APawn* pawn) {
 }
 
 void ACV22::LeftActor_Implementation(APawn* pawn) {
-	UHandControllerComponent* leftController = TailScannerInsideMe->GetLeftController();
-	UHandControllerComponent* rightController = TailScannerInsideMe->GetRightController();
 	UHoistComponent* hoist = Cast<UHoistComponent>(GetComponentByClass(UHoistComponent::StaticClass()));
 	if (!hoist) return;
+
+	UHandControllerComponent* leftController = TailScannerInsideMe->GetLeftController();
+	UHandControllerComponent* rightController = TailScannerInsideMe->GetRightController();
 	if (leftController) {
-		USceneComponent* grabbed = leftController->GetGrabbedComponent();
-		if (grabbed == hoist->RescueHook || grabbed == hoist->CableGrabber) leftController->ReleaseGrab();
+		if (hoist->IsAHoistGrabbableComponent(leftController->GetGrabbedComponent())) leftController->ReleaseGrab();
 	}
 	if (rightController) {
-		USceneComponent* grabbed = rightController->GetGrabbedComponent();
-		if (grabbed == hoist->RescueHook || grabbed == hoist->CableGrabber) rightController->ReleaseGrab();
+		if (hoist->IsAHoistGrabbableComponent(rightController->GetGrabbedComponent())) rightController->ReleaseGrab();
 	}
 	TailScannerInsideMe = nullptr;
 }

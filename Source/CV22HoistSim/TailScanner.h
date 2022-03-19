@@ -64,12 +64,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	class UMaterialInterface * NVGMaterialBase;
 
+	void UpdateNVGs();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintCallable)
-	void ToggleNVGs();
 
 	UFUNCTION(BlueprintCallable)
 	void GrabLeft();
@@ -93,8 +92,8 @@ public:
 	void HoistSetPower(bool on);
 	void HoistSetJettison(bool state);
 	void HoistSetUpDown(float amount);
+	void HoistStopUpDown();
 	
-	void HoistUpDown(float amount);
 	void HoistPower();
 	void HoistJettison();
 

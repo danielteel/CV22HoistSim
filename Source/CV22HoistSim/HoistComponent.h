@@ -49,12 +49,11 @@ public:
 		TArray<class UPrimitiveComponent*> GetWindAffectableComponents();
 
 	UFUNCTION(BlueprintCallable)
+		bool IsAHoistGrabbableComponent(USceneComponent* component);
+
+	UFUNCTION(BlueprintCallable)
 		class UPrimitiveComponent* GetDeviceOnGround();
 
-	UPROPERTY(VisibleAnywhere)
-		class UCableGrabComponent* CableGrabber = nullptr;
-
-	URescueHook* RescueHook = nullptr;
 private:
 	void FixStuckCable();
 	void UpdateCableGrab(float deltaTime);
@@ -101,6 +100,10 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	class UCableComponent* BoomToBaseCable = nullptr;
 
+	UPROPERTY(VisibleAnywhere)
+		class UCableGrabComponent* CableGrabber = nullptr;
+
+	URescueHook* RescueHook = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
 	class UPhysicsConstraintComponent* CableBaseConstraint = nullptr;

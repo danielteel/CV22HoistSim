@@ -34,7 +34,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Setup")
 	class UStaticMeshComponent* BaseMeshComponent = nullptr;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadonly)
 	int Positions = 2;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

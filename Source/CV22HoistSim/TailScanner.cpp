@@ -13,6 +13,7 @@
 #include "CanBeAt.h"
 #include "CanBeAtMovementComponent.h"
 #include "HoistControlPanel.h"
+#include "CV22HoistSimGameModeBase.h"
 
 // Sets default values
 ATailScanner::ATailScanner()
@@ -70,6 +71,11 @@ void ATailScanner::BeginPlay()
 
 void ATailScanner::AffectMoveToNext(AActor* actorToBeAt) {
 	if (CurrentBeAtActor) {
+		MoveForward(0);
+		MoveRight(0);
+		MoveUp(0);
+		YawRight(0);
+		HoistStopUpDown();
 		ICanBeAt::Execute_LeftActor(CurrentBeAtActor, this);
 	}
 	CurrentBeAtActor = actorToBeAt;
@@ -142,6 +148,8 @@ void ATailScanner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	UpdateNVGs();
+
 	if (CurrentBeAtActor) {
 		UHoistControlPanel* hcp = Cast<UHoistControlPanel>(CurrentBeAtActor->GetComponentByClass(UHoistControlPanel::StaticClass()));
 		if (hcp) {
@@ -152,13 +160,31 @@ void ATailScanner::Tick(float DeltaTime)
 	}
 }
 
-void ATailScanner::ToggleNVGs() {
-	if (NVGsOn) {
+void ATailScanner::UpdateNVGs() {
+	ACV22HoistSimGameModeBase* gameMode = Cast<ACV22HoistSimGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!gameMode) return;
+	if (NVGsOn==true && gameMode->IsNight == false) {
 		PostProcessComponent->AddOrUpdateBlendable(NVGMaterialInstance, 0.0f);
 		NVGsOn = false;
-	} else {
+		Camera->PostProcessSettings.bOverride_DepthOfFieldFstop = false;
+		Camera->PostProcessSettings.bOverride_DepthOfFieldFocalDistance = false;
+
+		Camera->PostProcessSettings.GrainIntensity = 0.0f;
+		Camera->PostProcessSettings.GrainJitter = 0.0f;
+		Camera->PostProcessSettings.bOverride_GrainJitter = false;
+		Camera->PostProcessSettings.bOverride_GrainIntensity = false;
+	} else if (NVGsOn == false && gameMode->IsNight == true) {
 		PostProcessComponent->AddOrUpdateBlendable(NVGMaterialInstance, 1.0f);
 		NVGsOn = true;
+		Camera->PostProcessSettings.DepthOfFieldFstop = 1.0f;
+		Camera->PostProcessSettings.DepthOfFieldFocalDistance = 10000.0f;
+		Camera->PostProcessSettings.bOverride_DepthOfFieldFstop = true;
+		Camera->PostProcessSettings.bOverride_DepthOfFieldFocalDistance = true;
+
+		Camera->PostProcessSettings.GrainIntensity = 1.0f;
+		Camera->PostProcessSettings.GrainJitter = 1.0f;
+		Camera->PostProcessSettings.bOverride_GrainJitter = true;
+		Camera->PostProcessSettings.bOverride_GrainIntensity = true;
 	}
 }
 
@@ -218,6 +244,15 @@ void ATailScanner::HoistSetJettison(bool state) {
 		hcp->SetJettison(state);
 	}
 }
+void ATailScanner::HoistStopUpDown() {
+	HoistExtendIntent = 0.0f;
+	if (CurrentBeAtActor) {
+		UHoistControlPanel* hcp = Cast<UHoistControlPanel>(CurrentBeAtActor->GetComponentByClass(UHoistControlPanel::StaticClass()));
+		if (hcp) {
+			hcp->SetExtendCommand(0.0f);
+		}
+	}
+}
 void ATailScanner::HoistSetUpDown(float amount) {
 	HoistExtendIntent += amount;
 }
@@ -239,8 +274,6 @@ void ATailScanner::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	
 	PlayerInputComponent->BindAction(FName("CyclePosition"), IE_Pressed, this, &ATailScanner::MoveToNextBeAt);
 	PlayerInputComponent->BindAction(FName("ResetView"), IE_Pressed, this, &ATailScanner::ResetView);
-
-	PlayerInputComponent->BindAction(FName("ToggleNVGs"), IE_Pressed, this, &ATailScanner::ToggleNVGs);
 
 	PlayerInputComponent->BindAction(FName("GrabLeft"), EInputEvent::IE_Pressed, this, &ATailScanner::GrabLeft);
 	PlayerInputComponent->BindAction(FName("GrabLeft"), EInputEvent::IE_Released, this, &ATailScanner::ReleaseLeft);
