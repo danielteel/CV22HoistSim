@@ -84,8 +84,16 @@ void ATailScanner::AffectMoveToNext(AActor* actorToBeAt) {
 		CurrentBeAtComponent = ICanBeAt::Execute_GetComponentToAttachTo(CurrentBeAtActor);
 		if (!CurrentBeAtComponent) CurrentBeAtComponent = CurrentBeAtActor->GetRootComponent();
 		VRRoot->AttachToComponent(CurrentBeAtComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("VRPawn"));
+		FVector scale3d = CurrentBeAtActor->GetActorScale();
+
+		LeftController->SetWorldScale3D(scale3d);
+		RightController->SetWorldScale3D(scale3d);
+		UHeadMountedDisplayFunctionLibrary::SetWorldToMetersScale(GetWorld(), 100.0f * scale3d.GetMin());//Set to default scale
 	} else {
 		VRRoot->AttachToComponent(Root, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("VRPawn"));
+		UHeadMountedDisplayFunctionLibrary::SetWorldToMetersScale(GetWorld());//Set to default scale
+		LeftController->SetWorldScale3D(FVector(1.0f));
+		RightController->SetWorldScale3D(FVector(1.0f));
 	}
 
 	LeftController->SetOtherHand(RightController);

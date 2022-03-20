@@ -6,6 +6,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Grabbable.h"
 #include "DrawDebugHelpers.h"
+#include "HeadMountedDisplay/Public/HeadMountedDisplayFunctionLibrary.h"
 
 
 UHandControllerComponent::UHandControllerComponent() {
@@ -26,10 +27,10 @@ void UHandControllerComponent::OnRegister() {
 void UHandControllerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	UpdateHighlight();
+
 	if (GrabbedComponent) {
 		IGrabbable::Execute_GrabEvent(GrabbedComponent, this, 0, 0, 0);
-	} else {
-		HighlightGrabbable();
 	}
 }
 
@@ -44,8 +45,30 @@ void UHandControllerComponent::SetEnabled(bool enabled) {
 	}
 }
 
-void UHandControllerComponent::HighlightGrabbable() {
+void UHandControllerComponent::UpdateHighlight() {
+	if (GrabbedComponent) {
+		if (HighlightedComponent) {
+			HighlightedComponent->SetVisibility(true);
+			HighlightStaticMesh->SetVisibility(false);
+			HighlightedComponent = nullptr;
+		}
+		return;
+	}
 	UStaticMeshComponent* componentToHighlight = Cast<UStaticMeshComponent>(GetComponentToGrab());
+
+	if (HighlightedComponent) {
+		if (HighlightedComponent == componentToHighlight) {
+			HighlightedComponent->SetVisibility(false);
+			HighlightStaticMesh->SetWorldLocationAndRotation(HighlightedComponent->GetComponentLocation(), HighlightedComponent->GetComponentRotation());
+			HighlightStaticMesh->SetWorldScale3D(HighlightedComponent->GetComponentScale());
+			return;
+		}
+		if (HighlightedComponent != componentToHighlight) {
+			HighlightedComponent->SetVisibility(true);
+			HighlightStaticMesh->SetVisibility(false);
+			HighlightedComponent = nullptr;
+		}
+	}
 
 	if (componentToHighlight) {
 		HighlightStaticMesh->SetStaticMesh(componentToHighlight->GetStaticMesh());
@@ -61,9 +84,11 @@ void UHandControllerComponent::HighlightGrabbable() {
 			UE_LOG(LogTemp, Warning, TEXT("No hightlight material for UHandControllerComponent"))
 		}
 
+		HighlightedComponent = componentToHighlight;
+		HighlightedComponent->SetVisibility(false);
 		HighlightStaticMesh->SetVisibility(true);
 		HighlightStaticMesh->SetWorldLocationAndRotation(componentToHighlight->GetComponentLocation(), componentToHighlight->GetComponentRotation());
-		HighlightStaticMesh->SetWorldScale3D(componentToHighlight->GetComponentScale()+FVector(0.05f,0.05f,0.05f));
+		HighlightStaticMesh->SetWorldScale3D(componentToHighlight->GetComponentScale());
 	} else {
 		HighlightStaticMesh->SetVisibility(false);
 	}
@@ -79,7 +104,7 @@ UPrimitiveComponent* UHandControllerComponent::GetComponentToGrab() {
 
 	FVector handLocation = GetComponentLocation();
 
-	bool result = UKismetSystemLibrary::SphereOverlapComponents(GetWorld(), handLocation, GrabDistance, objectTypes, nullptr, actorsToIgnore, outComponents);
+	bool result = UKismetSystemLibrary::SphereOverlapComponents(GetWorld(), handLocation, GrabDistance*GetComponentScale().GetMin(), objectTypes, nullptr, actorsToIgnore, outComponents);
 	if (result) {
 		float distanceToGrab = 0.0f;
 		for (int i = 0; i < outComponents.Num(); i++) {

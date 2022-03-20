@@ -20,7 +20,7 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void HighlightGrabbable();
+	void UpdateHighlight();
 
 	UPrimitiveComponent * GetComponentToGrab();
 
@@ -60,4 +60,7 @@ protected:
 
 	UPROPERTY()
 	class USceneComponent* GrabbedComponent = nullptr;
+
+	UPROPERTY()
+		class USceneComponent* HighlightedComponent = nullptr;
 };
