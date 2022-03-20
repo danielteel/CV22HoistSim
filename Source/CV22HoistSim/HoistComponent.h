@@ -54,6 +54,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		class UPrimitiveComponent* GetDeviceOnGround();
 
+	USceneComponent* GetCableBase() { return CableBase; }
+	void GrabEndRescueHook();
+
 private:
 	void FixStuckCable();
 	void UpdateCableGrab(float deltaTime);

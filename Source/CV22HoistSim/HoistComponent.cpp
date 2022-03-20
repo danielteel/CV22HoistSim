@@ -246,8 +246,7 @@ TArray<class UPrimitiveComponent*> UHoistComponent::GetWindAffectableComponents(
 	URescueHook* rescueHook = Cast<URescueHook>(GetOwner()->GetComponentByClass(URescueHook::StaticClass()));
 	if (!rescueHook) return windAffectableComponents;
 
-
-	windAffectableComponents.Add(rescueHook);
+	if (rescueHook->IsSimulatingPhysics()) windAffectableComponents.Add(rescueHook);
 	if (rescueHook->GetAttachedDevice()) {
 		windAffectableComponents.Add(rescueHook->GetAttachedDevice());
 	}
@@ -319,4 +318,25 @@ void UHoistComponent::FixStuckCable() {
 			BaseToHookCable->bEnableCollision = false;
 		}
 	}
+}
+
+void UHoistComponent::GrabEndRescueHook() {
+	CableBaseConstraint->BreakConstraint();
+
+	FVector oldLocation = RescueHook->GetComponentLocation();
+	FRotator oldRot = RescueHook->GetComponentRotation();
+
+	RescueHook->SetWorldRotation(CableBase->GetComponentRotation(), false ,nullptr, ETeleportType::TeleportPhysics);
+	RescueHook->SetWorldLocation(CableBase->GetComponentLocation(), false, nullptr, ETeleportType::TeleportPhysics);
+
+	float hoistOutMinusOffset = HoistOutLength - HoistGrabOffset;
+	CableBaseConstraint->SetWorldLocation(CableBase->GetComponentLocation());
+	CableBaseConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, hoistOutMinusOffset);
+	CableBaseConstraint->SetLinearYLimit(ELinearConstraintMotion::LCM_Limited, hoistOutMinusOffset);
+	CableBaseConstraint->SetLinearZLimit(ELinearConstraintMotion::LCM_Limited, hoistOutMinusOffset);
+	CableBaseConstraint->SetConstrainedComponents(CableBase, NAME_None, RescueHook, NAME_None);
+
+	RescueHook->SetWorldRotation(oldRot, false, nullptr, ETeleportType::TeleportPhysics);
+	RescueHook->SetWorldLocation(oldLocation, false, nullptr, ETeleportType::TeleportPhysics);
+
 }

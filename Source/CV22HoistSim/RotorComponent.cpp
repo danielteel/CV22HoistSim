@@ -126,6 +126,7 @@ void URotorComponent::ApplyWindForces() {
 			if (!FMath::IsNearlyEqual(componentForceSigns.Y, currentForceSigns.Y)) currentForce.Y = 0.0f;
 			if (!FMath::IsNearlyEqual(componentForceSigns.Z, currentForceSigns.Z)) currentForce.Z = 0.0f;
 			componentForce[i] = (componentForce[i] - currentForce) / 1.5f;
+			
 			windAffectableComponents[i]->AddForce(componentForce[i] * gameMode->KickFactor);
 		}
 	}

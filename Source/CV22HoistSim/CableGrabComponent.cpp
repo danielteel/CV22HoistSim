@@ -33,7 +33,7 @@ void UCableGrabComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 				segmentRotation.Pitch += 90.0f;
 				CableSegments[i]->SetWorldLocation((cableParticleLocations[i] + cableParticleLocations[i + 1]) / 2.0f);
 				CableSegments[i]->SetWorldRotation(segmentRotation);
-				CableSegments[i]->SetCapsuleSize(MasterCable->CableWidth, length);
+				CableSegments[i]->SetCapsuleSize(MasterCable->CableWidth/2, length);
 			}
 		}
 	}
@@ -56,7 +56,7 @@ void UCableGrabComponent::Setup(class UCableComponent* cable) {
 	*/
 	MasterCable = cable;
 	if (cable) {
-		NumCableSegments = cable->NumSegments;
+		NumCableSegments = cable->NumSegments-1;
 		for (int i = 0; i < NumCableSegments; i++) {
 			CableSegments.Add(NewGrabSegment());
 		}

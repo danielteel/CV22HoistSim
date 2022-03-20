@@ -36,7 +36,7 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	float InitialCapsuleRadius = 1.0f;
+	float InitialCapsuleRadius = .25f;
 
 	UPROPERTY(VisibleAnywhere)
 	float InitialCapsuleHalfHeight = 1.0f;

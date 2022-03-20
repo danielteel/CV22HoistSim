@@ -17,16 +17,21 @@ public:
 	URescueHook();
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void OnRegister() override;
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
-	class UPhysicsHandleComponent* GrabComponent = nullptr;
-
 	class UPhysicsConstraintComponent* HookConstraint = nullptr;
 
 	class UPrimitiveComponent* AttachedDevice = nullptr;
+
+	UPROPERTY()
+	class UHoistComponent* HoistOwner = nullptr;
+
+	FVector LastLocation;
+	FVector Velocity;
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Grabbable")
 		USceneComponent* GetComponentToGrab();

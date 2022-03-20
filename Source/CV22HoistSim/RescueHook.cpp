@@ -14,16 +14,24 @@
 #include "PhysXPublic.h"
 #include "PhysicsEngine/BodyInstance.h"
 #include "GameFramework/PhysicsVolume.h"
+#include "HoistComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 URescueHook::URescueHook() {
 	PrimaryComponentTick.bCanEverTick = true;
-	GrabComponent = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("GrabConstraint"));
-	GrabComponent->bAutoActivate = true;
+
 
 	HookConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(FName("HookConstraint"));
-	HookConstraint->SetupAttachment(this);
+}
+
+void URescueHook::OnRegister() {
+	Super::OnRegister();
+	if (HookConstraint) {
+		HookConstraint->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	}
+
+	HoistOwner = Cast<UHoistComponent>(GetAttachParent());
 }
 
 void URescueHook::BeginPlay() {
@@ -35,28 +43,39 @@ void URescueHook::BeginPlay() {
 	HookConstraint->ConstraintInstance.ProfileInstance.ConeLimit.Damping = 800.0f;
 	HookConstraint->ConstraintInstance.ProfileInstance.ConeLimit.Stiffness = 10.0f;
 }
+
 void URescueHook::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	WakeRigidBody();
+	if (IsSimulatingPhysics() && !RigidBodyIsAwake()) WakeRigidBody();
+
+	Velocity = (GetComponentLocation() - LastLocation)/DeltaTime;
+
+	LastLocation = GetComponentLocation();
 }
 
 USceneComponent* URescueHook::GetComponentToGrab_Implementation() {
 	return this;
 }
 void URescueHook::GrabStart_Implementation(UPrimitiveComponent * hand) {
-	GrabComponent->GrabComponent(this, NAME_None, this->GetComponentLocation(), false);
+	SetSimulatePhysics(false);
+	this->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	AttachToComponent(hand, FAttachmentTransformRules::KeepWorldTransform);
 }
 void URescueHook::GrabEnd_Implementation(UPrimitiveComponent * hand) {
-	GrabComponent->ReleaseComponent();
+	FVector lastVelocity = GetComponentVelocity();
+	DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	this->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SetSimulatePhysics(true);	
+
+	if (HoistOwner) HoistOwner->GrabEndRescueHook();
+	
+	this->SetPhysicsLinearVelocity(Velocity);
 }
 void URescueHook::GrabEvent_Implementation(UPrimitiveComponent * hand, bool buttonPressed, float xAxis, float yAxis) {
-	GrabComponent->SetTargetLocation(hand->GetComponentLocation());
 }
 
 
 void URescueHook::Attach(UPrimitiveComponent* device) {
-	GrabComponent->ReleaseComponent();//Release the grab if we be grabbed
-
 	AttachedDevice = device;
 	FRotator deviceRot = device->GetComponentRotation();;
 	SetWorldRotation(deviceRot, false, nullptr, ETeleportType::ResetPhysics);
