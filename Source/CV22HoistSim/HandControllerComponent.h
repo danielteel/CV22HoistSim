@@ -16,6 +16,7 @@ class CV22HOISTSIM_API UHandControllerComponent : public UMotionControllerCompon
 
 public:
 	UHandControllerComponent();
+	virtual void OnRegister() override;
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

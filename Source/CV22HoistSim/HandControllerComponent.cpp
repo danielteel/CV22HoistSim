@@ -12,11 +12,17 @@ UHandControllerComponent::UHandControllerComponent() {
 	PrimaryComponentTick.bCanEverTick = true;
 
 	HighlightStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("HighlightStaticMesh"));
-	HighlightStaticMesh->SetupAttachment(this);
-	HighlightStaticMesh->SetVisibility(false);
 
 	SetShowDeviceModel(true);
 }
+
+void UHandControllerComponent::OnRegister() {
+	Super::OnRegister();
+
+	HighlightStaticMesh->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	HighlightStaticMesh->SetVisibility(false);
+}
+
 void UHandControllerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -46,9 +52,13 @@ void UHandControllerComponent::HighlightGrabbable() {
 		HighlightStaticMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		HighlightStaticMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 
-		int32 numMaterials = componentToHighlight->GetNumMaterials();
-		for (int i = 0; i < numMaterials; i++) {
-			HighlightStaticMesh->SetMaterial(i, HighlightMaterial);
+		if (HighlightMaterial) {
+			int32 numMaterials = componentToHighlight->GetNumMaterials();
+			for (int i = 0; i < numMaterials; i++) {
+				HighlightStaticMesh->SetMaterial(i, HighlightMaterial);
+			}
+		} else {
+			UE_LOG(LogTemp, Warning, TEXT("No hightlight material for UHandControllerComponent"))
 		}
 
 		HighlightStaticMesh->SetVisibility(true);

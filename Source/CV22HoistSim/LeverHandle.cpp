@@ -11,11 +11,7 @@
 ULeverHandle::ULeverHandle() {
 	PrimaryComponentTick.bCanEverTick = true;
 }
-void ULeverHandle::BeginPlay() {
-	Super::BeginPlay();
 
-	InitialRotation = GetRelativeRotation();
-}
 
 void ULeverHandle::Setup(float minPitch, float maxPitch, float initialValue, ULever* owner) {
 	MinPitch = minPitch;

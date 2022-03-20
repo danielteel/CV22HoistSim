@@ -15,10 +15,6 @@ class CV22HOISTSIM_API ULeverHandle : public UStaticMeshComponent, public IGrabb
 {
 	GENERATED_BODY()
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
 public:
 	ULeverHandle();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -39,8 +35,6 @@ public:
 	virtual void GrabEvent_Implementation(class UPrimitiveComponent* hand, bool buttonPressed, float xAxis, float yAxis) override;
 
 private:
-	FRotator InitialRotation;
-
 	UPROPERTY()
 	class ULever* Owner = nullptr;
 
