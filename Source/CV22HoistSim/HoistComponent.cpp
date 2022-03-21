@@ -27,20 +27,49 @@ UHoistComponent::UHoistComponent() {
 	BoomHeadMesh = CreateDefaultSubobject<UStaticMesh>(FName("BoomHeadMesh"));
 	RescueHookMesh = CreateDefaultSubobject<UStaticMesh>(FName("HookMesh"));
 
+
 	CableBase = CreateDefaultSubobject<USphereComponent>(FName("CableBase"));
-	CableBase->SetupAttachment(this);
+
 
 	BoomHead = CreateDefaultSubobject<UStaticMeshComponent>(FName("BoomHead"));
-	BoomHead->SetupAttachment(this);
 
 	RescueHook = CreateDefaultSubobject<URescueHook>(FName("RescueHook"));
-	RescueHook->SetupAttachment(this);
+
 
 	CableBaseConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(FName("CableBaseConstraint"));
-	CableBaseConstraint->SetupAttachment(CableBase);
 
 	BaseToHookCable = CreateDefaultSubobject<UCableComponent>(FName("BaseToHookCable"));
+
+
+	BoomToBaseCable = CreateDefaultSubobject<UCableComponent>(FName("BoomToBaseCable"));
+
+	CableGrabber = CreateDefaultSubobject<UCableGrabComponent>(FName("CableGrabber"));
+
+}
+
+void UHoistComponent::OnRegister() {
+	Super::OnRegister();
+
+	RescueHook->SetupAttachment(this);
+	RescueHook->SetStaticMesh(RescueHookMesh);
+	RescueHook->SetMassOverrideInKg(NAME_None, 3.0f);
+	RescueHook->SetUseCCD(true);
+	RescueHook->SetLinearDamping(0.1f);
+	RescueHook->SetSimulatePhysics(true);
+
+	CableBase->SetupAttachment(this);
+	CableBase->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	CableBase->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+
+	BoomHead->SetupAttachment(this);
+	BoomHead->SetStaticMesh(BoomHeadMesh);
+	BoomHead->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	BoomHead->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+
+	CableBaseConstraint->SetupAttachment(CableBase);
 	BaseToHookCable->SetupAttachment(CableBase);
+	BoomToBaseCable->SetupAttachment(BoomHead);
+
 	BaseToHookCable->CableLength = 1.0f;
 	BaseToHookCable->NumSegments = 70;
 	BaseToHookCable->bEnableStiffness = true;
@@ -50,14 +79,9 @@ UHoistComponent::UHoistComponent() {
 	BaseToHookCable->bEnableCollision = true;
 	BaseToHookCable->EndLocation = FVector(0.0f);
 	BaseToHookCable->SetAttachEndToComponent(RescueHook);
-	BaseToHookCable->bCastFarShadow = true;
-	BaseToHookCable->bCastDynamicShadow = true;
 	BaseToHookCable->CableWidth = 4.0f;
 	BaseToHookCable->CollisionFriction = 0.05f;
 
-
-	BoomToBaseCable = CreateDefaultSubobject<UCableComponent>(FName("BoomToBaseCable"));
-	BoomToBaseCable->SetupAttachment(BoomHead);
 	BoomToBaseCable->CableLength = 1.0f;
 	BoomToBaseCable->NumSegments = 1;
 	BoomToBaseCable->SubstepTime = BaseToHookCable->SubstepTime;
@@ -66,40 +90,8 @@ UHoistComponent::UHoistComponent() {
 	BoomToBaseCable->SetAttachEndToComponent(CableBase);
 	BoomToBaseCable->CableWidth = BaseToHookCable->CableWidth;
 
-	CableGrabber = CreateDefaultSubobject<UCableGrabComponent>(FName("CableGrabber"));
 	CableGrabber->SetupAttachment(this);
-}
 
-
-// Called when the game starts
-void UHoistComponent::BeginPlay() {
-	Super::BeginPlay();
-
-	BaseToHookCable->AttachToComponent(CableBase, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	BaseToHookCable->SetAttachEndToComponent(RescueHook);
-
-	BoomToBaseCable->AttachToComponent(BoomHead, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	BoomToBaseCable->SetAttachEndToComponent(CableBase);
-
-	CableGrabber->Setup(BaseToHookCable);
-
-	BoomHead->SetStaticMesh(BoomHeadMesh);
-	BoomHead->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	BoomHead->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-
-	CableBase->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	CableBase->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	CableBase->SetUseCCD(true);
-
-	RescueHook->SetStaticMesh(RescueHookMesh);
-	RescueHook->SetMassOverrideInKg(NAME_None, 3.0f);
-	RescueHook->SetSimulatePhysics(true);
-	RescueHook->SetUseCCD(true);
-	RescueHook->bCastFarShadow = true;
-	RescueHook->bCastDynamicShadow = true;
-	RescueHook->SetLinearDamping(0.1f);
-
-	CableBaseConstraint->SetWorldLocation(GetComponentLocation());
 	CableBaseConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
 	CableBaseConstraint->SetLinearYLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
 	CableBaseConstraint->SetLinearZLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
@@ -109,6 +101,12 @@ void UHoistComponent::BeginPlay() {
 	CableBaseConstraint->SetConstrainedComponents(CableBase, NAME_None, RescueHook, NAME_None);
 
 	LastPosition = GetOwner()->GetActorLocation();
+}
+
+// Called when the game starts
+void UHoistComponent::BeginPlay() {
+	Super::BeginPlay();
+	CableGrabber->Setup(BaseToHookCable);
 }
 
 

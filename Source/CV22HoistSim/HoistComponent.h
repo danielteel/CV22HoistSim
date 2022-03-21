@@ -25,6 +25,7 @@ protected:
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void OnRegister() override;
 
 	UFUNCTION(BlueprintCallable)
 		bool IsWithinLimit();
@@ -86,28 +87,30 @@ protected:
 	UPROPERTY()
 	class UStaticMeshComponent* AttachedDevice = nullptr;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Setup", meta = (AllowPrivateAccess = "true"))
 	class UStaticMesh* RescueHookMesh = nullptr;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Setup", meta = (AllowPrivateAccess = "true"))
 	class UStaticMesh* BoomHeadMesh = nullptr;
 
+	UPROPERTY()
 	UStaticMeshComponent* BoomHead = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	class USphereComponent* CableBase = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	class UCableComponent* BaseToHookCable = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	class UCableComponent* BoomToBaseCable = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
-		class UCableGrabComponent* CableGrabber = nullptr;
+	UPROPERTY()
+	class UCableGrabComponent* CableGrabber = nullptr;
 
+	UPROPERTY()
 	URescueHook* RescueHook = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	class UPhysicsConstraintComponent* CableBaseConstraint = nullptr;
 };
