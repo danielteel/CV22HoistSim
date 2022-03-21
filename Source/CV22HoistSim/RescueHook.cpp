@@ -23,6 +23,7 @@ URescueHook::URescueHook() {
 
 
 	HookConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(FName("HookConstraint"));
+	HookConstraint->SetupAttachment(this);
 }
 
 void URescueHook::OnRegister() {
