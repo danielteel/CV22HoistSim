@@ -23,52 +23,57 @@ UHoistComponent::UHoistComponent() {
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-
+	/*
 	BoomHeadMesh = CreateDefaultSubobject<UStaticMesh>(FName("BoomHeadMesh"));
 	RescueHookMesh = CreateDefaultSubobject<UStaticMesh>(FName("HookMesh"));
-
+	CableMaterial = CreateDefaultSubobject<UMaterial>(FName("CableMaterial"));
 
 	CableBase = CreateDefaultSubobject<USphereComponent>(FName("CableBase"));
-
-
 	BoomHead = CreateDefaultSubobject<UStaticMeshComponent>(FName("BoomHead"));
-
 	RescueHook = CreateDefaultSubobject<URescueHook>(FName("RescueHook"));
 
-
 	CableBaseConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(FName("CableBaseConstraint"));
-
+	*/
 	BaseToHookCable = CreateDefaultSubobject<UCableComponent>(FName("BaseToHookCable"));
-
-
 	BoomToBaseCable = CreateDefaultSubobject<UCableComponent>(FName("BoomToBaseCable"));
-
+	/*
 	CableGrabber = CreateDefaultSubobject<UCableGrabComponent>(FName("CableGrabber"));
-
+	*/
 }
 
 void UHoistComponent::OnRegister() {
 	Super::OnRegister();
+	CableBase = NewObject<USphereComponent>(this, FName("CableBase"));
+	CableBase->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	CableBase->RegisterComponent();
+	BoomHead = NewObject<UStaticMeshComponent>(this, FName("BoomHead"));
+	BoomHead->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	BoomHead->RegisterComponent();
+	RescueHook = NewObject<URescueHook>(this, FName("RescueHook"));
+	RescueHook->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	RescueHook->RegisterComponent();
+	CableBaseConstraint = NewObject<UPhysicsConstraintComponent>(this, FName("CableBaseConstraint"));
+	CableBaseConstraint->AttachToComponent(CableBase, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	CableBaseConstraint->RegisterComponent();
+	BaseToHookCable->AttachToComponent(CableBase, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	BoomToBaseCable->AttachToComponent(BoomHead, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	CableGrabber = NewObject<UCableGrabComponent>(this, FName("CableGrabber"));
+	CableGrabber->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	CableGrabber->RegisterComponent();
 
-	RescueHook->SetupAttachment(this);
 	RescueHook->SetStaticMesh(RescueHookMesh);
 	RescueHook->SetMassOverrideInKg(NAME_None, 3.0f);
 	RescueHook->SetUseCCD(true);
 	RescueHook->SetLinearDamping(0.1f);
 	RescueHook->SetSimulatePhysics(true);
 
-	CableBase->SetupAttachment(this);
 	CableBase->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	CableBase->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 
-	BoomHead->SetupAttachment(this);
 	BoomHead->SetStaticMesh(BoomHeadMesh);
 	BoomHead->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	BoomHead->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 
-	CableBaseConstraint->SetupAttachment(CableBase);
-	BaseToHookCable->SetupAttachment(CableBase);
-	BoomToBaseCable->SetupAttachment(BoomHead);
 
 	BaseToHookCable->CableLength = 1.0f;
 	BaseToHookCable->NumSegments = 70;
@@ -81,6 +86,7 @@ void UHoistComponent::OnRegister() {
 	BaseToHookCable->SetAttachEndToComponent(RescueHook);
 	BaseToHookCable->CableWidth = 4.0f;
 	BaseToHookCable->CollisionFriction = 0.05f;
+	BaseToHookCable->SetMaterial(0, CableMaterial);
 
 	BoomToBaseCable->CableLength = 1.0f;
 	BoomToBaseCable->NumSegments = 1;
@@ -89,8 +95,8 @@ void UHoistComponent::OnRegister() {
 	BoomToBaseCable->EndLocation = FVector(0.0f);
 	BoomToBaseCable->SetAttachEndToComponent(CableBase);
 	BoomToBaseCable->CableWidth = BaseToHookCable->CableWidth;
+	BoomToBaseCable->SetMaterial(0, CableMaterial);
 
-	CableGrabber->SetupAttachment(this);
 
 	CableBaseConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
 	CableBaseConstraint->SetLinearYLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);

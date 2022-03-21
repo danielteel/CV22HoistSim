@@ -20,7 +20,7 @@ UHandControllerComponent::UHandControllerComponent() {
 void UHandControllerComponent::OnRegister() {
 	Super::OnRegister();
 
-	HighlightStaticMesh->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	HighlightStaticMesh->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 	HighlightStaticMesh->SetVisibility(false);
 }
 

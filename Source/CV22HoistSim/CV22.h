@@ -72,4 +72,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 	class UCV22MovementComponent* MovementComponent = nullptr;
 
+	UPROPERTY(VisibleAnywhere, Category = Setup)
+	class UHoistComponent* HoistComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, Category = Setup)
+	class UHoistControlPanel* HoistControlPanel = nullptr;
 };

@@ -12,16 +12,26 @@
 UHoistControlPanel::UHoistControlPanel() {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	PowerSwitchMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("PowerSwitch"));
-	PowerSwitchMeshComponent->SetupAttachment(this, "OnOff");
 
-	UpDownMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("UpDown"));
-	UpDownMeshComponent->SetupAttachment(this, "UpDown");
-
-	JettisonMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("Jettison"));
-	JettisonMeshComponent->SetupAttachment(this, "Jettison");
 }
 
+void UHoistControlPanel::OnRegister() {
+	Super::OnRegister();
+	PowerSwitchMeshComponent = NewObject<UStaticMeshComponent>(this, FName("PowerSwitch"));
+	PowerSwitchMeshComponent->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale, FName("OnOff"));
+	PowerSwitchMeshComponent->RegisterComponent();
+	PowerSwitchMeshComponent->SetStaticMesh(PowerSwitchMesh);
+
+	UpDownMeshComponent = NewObject<UStaticMeshComponent>(this, FName("UpDown"));
+	UpDownMeshComponent->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale, FName("UpDown"));
+	UpDownMeshComponent->RegisterComponent();
+	UpDownMeshComponent->SetStaticMesh(UpDownMesh);
+
+	JettisonMeshComponent = NewObject<UStaticMeshComponent>(this, FName("Jettison"));
+	JettisonMeshComponent->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale, FName("Jettison"));
+	JettisonMeshComponent->RegisterComponent();
+	JettisonMeshComponent->SetStaticMesh(JettisonMesh);
+}
 
 // Called when the game starts
 void UHoistControlPanel::BeginPlay() {

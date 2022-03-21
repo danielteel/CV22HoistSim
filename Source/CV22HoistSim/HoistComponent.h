@@ -93,6 +93,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Setup", meta = (AllowPrivateAccess = "true"))
 	class UStaticMesh* BoomHeadMesh = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Setup", meta = (AllowPrivateAccess = "true"))
+	class UMaterial* CableMaterial = nullptr;
+
 	UPROPERTY()
 	UStaticMeshComponent* BoomHead = nullptr;
 

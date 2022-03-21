@@ -18,7 +18,7 @@ void ULever::OnRegister() {
 		} else {
 			UE_LOG(LogTemp, Warning, TEXT("No base mesh selected for Lever component"))
 		}
-		BaseComponent->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+		BaseComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
 	}
 
 	if (LeverHandleComponent) {
@@ -27,7 +27,7 @@ void ULever::OnRegister() {
 		} else {
 			UE_LOG(LogTemp, Warning, TEXT("No lever handle mesh selected for Lever component"))
 		}
-		LeverHandleComponent->AttachToComponent(BaseComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, FName("Lever"));
+		LeverHandleComponent->AttachToComponent(BaseComponent, FAttachmentTransformRules::KeepRelativeTransform, FName("Lever"));
 		LeverHandleComponent->Setup(MinPitch, MaxPitch, 0.0f, this, WantsConstantUpdates);
 	}
 }

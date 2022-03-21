@@ -23,7 +23,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	class UPhysicsConstraintComponent* HookConstraint = nullptr;
 
 	class UPrimitiveComponent* AttachedDevice = nullptr;
 
@@ -49,12 +48,8 @@ public:
 		void GrabEvent(class UPrimitiveComponent* hand, bool buttonPressed, float upDown, float leftRight);
 	virtual void GrabEvent_Implementation(class UPrimitiveComponent* hand, bool buttonPressed, float xAxis, float yAxis) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Rescue Hook")
-		void Attach(UPrimitiveComponent * device);
 
 	UFUNCTION(BlueprintCallable, Category = "Rescue Hook")
 		UPrimitiveComponent * GetAttachedDevice();
 
-	UFUNCTION(BlueprintCallable, Category = "Rescue Hook")
-		void Dettach();
 };

@@ -21,28 +21,15 @@
 URescueHook::URescueHook() {
 	PrimaryComponentTick.bCanEverTick = true;
 
-
-	HookConstraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(FName("HookConstraint"));
-	HookConstraint->SetupAttachment(this);
 }
 
 void URescueHook::OnRegister() {
 	Super::OnRegister();
-	if (HookConstraint) {
-		HookConstraint->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	}
-
 	HoistOwner = Cast<UHoistComponent>(GetAttachParent());
 }
 
 void URescueHook::BeginPlay() {
 	Super::BeginPlay();
-	HookConstraint->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0.0f);
-	HookConstraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, 2.0f);
-	HookConstraint->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, 2.0f);
-	HookConstraint->ConstraintInstance.ProfileInstance.ConeLimit.bSoftConstraint = 1;
-	HookConstraint->ConstraintInstance.ProfileInstance.ConeLimit.Damping = 800.0f;
-	HookConstraint->ConstraintInstance.ProfileInstance.ConeLimit.Stiffness = 10.0f;
 }
 
 void URescueHook::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
@@ -76,27 +63,6 @@ void URescueHook::GrabEvent_Implementation(UPrimitiveComponent * hand, bool butt
 }
 
 
-void URescueHook::Attach(UPrimitiveComponent* device) {
-	AttachedDevice = device;
-	FRotator deviceRot = device->GetComponentRotation();;
-	SetWorldRotation(deviceRot, false, nullptr, ETeleportType::ResetPhysics);
-	FVector deviceSocketLocation = device->GetSocketLocation(FName("Hook"));
-	FVector hookSocketLocation = GetSocketLocation(FName("Hook"));
-	device->AddWorldOffset(hookSocketLocation - deviceSocketLocation, false, nullptr, ETeleportType::ResetPhysics);
-	device->SetPhysicsAngularVelocity(FVector(0.0f));
-	device->SetPhysicsLinearVelocity(FVector(0.0f));
-	SetPhysicsLinearVelocity(FVector(0.0f));
-	SetPhysicsAngularVelocity(FVector(0.0f));
-	HookConstraint->BreakConstraint();
-	HookConstraint->SetWorldLocation(hookSocketLocation);
-	HookConstraint->SetConstrainedComponents(this, NAME_None, device, NAME_None);
-}
-
 UPrimitiveComponent * URescueHook::GetAttachedDevice() {
-	return AttachedDevice;
-}
-
-void URescueHook::Dettach() {
-	AttachedDevice = nullptr;
-	HookConstraint->BreakConstraint();
+	return nullptr;
 }

@@ -12,7 +12,7 @@ class CV22HOISTSIM_API UHoistControlPanel : public UStaticMeshComponent {
 public:
 	// Sets default values for this component's properties
 	UHoistControlPanel();
-
+	virtual void OnRegister() override;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -29,13 +29,22 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float ExtendCommand = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Setup", meta = (AllowPrivateAccess = "true"))
+	class UStaticMesh* JettisonMesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Setup", meta = (AllowPrivateAccess = "true"))
+	class UStaticMesh* PowerSwitchMesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Setup", meta = (AllowPrivateAccess = "true"))
+	class UStaticMesh* UpDownMesh = nullptr;
+
+	UPROPERTY()
 	class UStaticMeshComponent* JettisonMeshComponent = nullptr;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY()
 	class UStaticMeshComponent* PowerSwitchMeshComponent = nullptr;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY()
 	class UStaticMeshComponent* UpDownMeshComponent = nullptr;
 
 public:

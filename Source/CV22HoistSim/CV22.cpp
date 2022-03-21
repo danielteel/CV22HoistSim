@@ -30,6 +30,9 @@ ACV22::ACV22()
 	Body->SetupAttachment(Root);
 	Body->SetMassOverrideInKg(NAME_None, 18143.0f, true);
 
+	HoistComponent = CreateDefaultSubobject<UHoistComponent>(FName("Hoist"));
+	HoistComponent->SetupAttachment(Body, FName("Hoist"));
+
 	RotorLeft = CreateDefaultSubobject<URotorComponent>(FName("RotorLeft"));
 	RotorLeft->SetupAttachment(Body, FName("RotorLeft"));
 
@@ -56,6 +59,9 @@ ACV22::ACV22()
 	AircraftNoise->AttenuationOverrides.dBAttenuationAtMax = -29.0f;
 	AircraftNoise->AttenuationOverrides.bEnableOcclusion = true;
 	AircraftNoise->AttenuationOverrides.OcclusionLowPassFilterFrequency = 2500.0f;
+
+	HoistControlPanel = CreateDefaultSubobject<UHoistControlPanel>(FName("HoistControlPanel"));
+	HoistControlPanel->SetupAttachment(Body, "HCP");
 	
 	MovementComponent = CreateDefaultSubobject<UCV22MovementComponent>(FName("MovementComponent"));
 }
