@@ -92,8 +92,10 @@ void ACV22::UpdateRotorDust(UParticleSystemComponent* dust, FVector rotorPositio
 
 	if (sweepSuccess && hitResult.PhysMaterial!=nullptr && hitResult.PhysMaterial->SurfaceType == EPhysicalSurface::SurfaceType1) {
 		if (!dust->IsActive()) dust->Activate();
-		dust->SetWorldLocation(hitResult.ImpactPoint);
-		float dustSpawnRate = FMath::Clamp(1.0f-((hitResult.Distance-2048.0f) / 4452.0f), 0.0f, 1.0f)*gameMode->DustFactor;
+		float scale = FMath::Clamp(1.5f - (hitResult.Distance / 6500), 0.7f, 1.3f);
+		dust->SetWorldLocation(hitResult.ImpactPoint+FVector::UpVector*150*scale);
+		dust->SetWorldScale3D(FVector(scale));
+		float dustSpawnRate = gameMode->DustFactor;
 		dust->SetFloatParameter("Amount", dustSpawnRate);
 	} else {
 		dust->Deactivate();

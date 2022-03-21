@@ -22,6 +22,12 @@ public:
 	virtual void MoveUp(float val) override;
 	virtual void YawRight(float val) override;
 
+	UFUNCTION(BlueprintCallable, Category=Movement)
+		FVector GetVelocity() { return LastVelocity; }
+
+	UFUNCTION(BlueprintCallable, Category = Movement)
+	int32 GetAGL();
+
 	UFUNCTION(BlueprintCallable, Category = Setup)
 	void Setup(UPrimitiveComponent* aircraft);
 
@@ -41,4 +47,5 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	FVector4 LastVelocity = FVector4(0.0f, 0.0f, 0.0f, 0.0f);
 
+	int32 AGL = 0;
 };

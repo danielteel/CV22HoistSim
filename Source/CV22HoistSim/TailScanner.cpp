@@ -58,15 +58,8 @@ void ATailScanner::BeginPlay()
 	MoveToNextBeAt();
 	ResetView();
 
-	UHeadMountedDisplayFunctionLibrary::EnableHMD(true);
+	if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayConnected() && !UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled()) UHeadMountedDisplayFunctionLibrary::EnableHMD(true);
 	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
-	if (SpectatorTexture != nullptr) {
-		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenTexture(SpectatorTexture);
-		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenModeTexturePlusEyeLayout(FVector2D(0.03f, 0.03f), FVector2D(0.35f, 0.35f), FVector2D(0.0f, 0.0f), FVector2D(1.0f, 1.0f), false, false, false);
-		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenMode(ESpectatorScreenMode::TexturePlusEye);
-	} else {
-		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenMode(ESpectatorScreenMode::SingleEyeCroppedToFill);
-	}
 }
 
 void ATailScanner::AffectMoveToNext(AActor* actorToBeAt) {

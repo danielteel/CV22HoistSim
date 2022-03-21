@@ -44,6 +44,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Setup", BlueprintReadonly, meta = (AllowPrivateAccess = "true"))
 	int Positions = 2;
 
+	UPROPERTY(EditAnywhere, Category = "Setup", BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool WantsConstantUpdates = false;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	int CurrentValue = 0;
 

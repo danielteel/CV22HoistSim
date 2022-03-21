@@ -13,10 +13,11 @@ ULeverHandle::ULeverHandle() {
 }
 
 
-void ULeverHandle::Setup(float minPitch, float maxPitch, float initialValue, ULever* owner) {
+void ULeverHandle::Setup(float minPitch, float maxPitch, float initialValue, ULever* owner, bool wantsConstantUpdates) {
 	MinPitch = minPitch;
 	MaxPitch = maxPitch;
 	Owner = owner;
+	WantsConstantUpdates = wantsConstantUpdates;
 
 	CurrentPitch = FMath::Lerp(MinPitch, MaxPitch, initialValue);
 	TargetPitch = FMath::Lerp(MinPitch, MaxPitch, initialValue);
@@ -66,6 +67,13 @@ void ULeverHandle::GrabEvent_Implementation(UPrimitiveComponent * hand, bool but
 	float pitch = FMath::RadiansToDegrees(UKismetMathLibrary::Atan2(unrotatedVector.Z, unrotatedVector.X));
 	pitch = FMath::Clamp(pitch, MinPitch, MaxPitch);
 	CurrentPitch = pitch;
-	TargetPitch = pitch;
+
 	SetRelativeRotation(FRotator(pitch, 0.0f, 0.0f));
+
+	if (Owner && WantsConstantUpdates) {
+		float val = 1.0f - (MaxPitch - CurrentPitch) / (MaxPitch - MinPitch);
+		Owner->LeverWasSet(val);
+	}
+
+	TargetPitch = pitch;
 }

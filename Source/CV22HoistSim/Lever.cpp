@@ -28,7 +28,7 @@ void ULever::OnRegister() {
 			UE_LOG(LogTemp, Warning, TEXT("No lever handle mesh selected for Lever component"))
 		}
 		LeverHandleComponent->AttachToComponent(BaseComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, FName("Lever"));
-		LeverHandleComponent->Setup(MinPitch, MaxPitch, 0.0f, this);
+		LeverHandleComponent->Setup(MinPitch, MaxPitch, 0.0f, this, WantsConstantUpdates);
 	}
 }
 

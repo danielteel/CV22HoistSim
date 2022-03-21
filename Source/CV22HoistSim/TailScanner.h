@@ -34,8 +34,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USceneComponent* CurrentBeAtComponent = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UTexture* SpectatorTexture = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool NVGsOn = false;

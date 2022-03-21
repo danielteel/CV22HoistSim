@@ -47,12 +47,31 @@ void UCV22MovementComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Aircraft->SetPhysicsAngularVelocityInDegrees(rotVel, true);
 	   	 
 	LastVelocity = localVelocity;
+
+
+	FHitResult hitResult;
+	FVector traceStart = GetOwner()->GetActorLocation();
+	FVector traceEnd = traceStart - FVector::UpVector * 50000.0f;
+	FCollisionQueryParams queryParams = FCollisionQueryParams::DefaultQueryParam;
+	queryParams.AddIgnoredActor(GetOwner());
+	bool success = GetWorld()->LineTraceSingleByChannel(hitResult, traceStart, traceEnd, ECollisionChannel::ECC_Visibility, queryParams);
+
+	if (success) {
+		AGL = hitResult.Distance*0.0328084f;
+	} else {
+		AGL = -1;
+	}
+
+}
+
+int32 UCV22MovementComponent::GetAGL() {
+	return AGL;
 }
 
 void UCV22MovementComponent::Setup(UPrimitiveComponent* aircraft) {
 	Aircraft = aircraft;
 	Aircraft->SetPhysicsMaxAngularVelocity(30);
-	Aircraft->SetLinearDamping(0.2f);
+	Aircraft->SetLinearDamping(0.4f);
 	Aircraft->SetAngularDamping(1.0f);
 }
 

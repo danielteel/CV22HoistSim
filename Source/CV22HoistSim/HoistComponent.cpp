@@ -322,6 +322,7 @@ void UHoistComponent::FixStuckCable() {
 
 void UHoistComponent::GrabEndRescueHook() {
 	CableBaseConstraint->BreakConstraint();
+	if (Jettisoned) return;
 
 	FVector oldLocation = RescueHook->GetComponentLocation();
 	FRotator oldRot = RescueHook->GetComponentRotation();

@@ -20,7 +20,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void SetValue(float value);
-	void Setup(float minPitch, float maxPitch, float initialValue, class ULever* owner);
+	void Setup(float minPitch, float maxPitch, float initialValue, class ULever* owner, bool wantsConstantUpdates);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Grabbable") USceneComponent* GetComponentToGrab();
 	virtual USceneComponent* GetComponentToGrab_Implementation() override;
@@ -43,6 +43,7 @@ private:
 	float MinPitch = 0;
 	float MaxPitch = 0;
 
+	bool WantsConstantUpdates = false;
 
 	float CurrentPitch = 0;
 	float TargetPitch = 0;
