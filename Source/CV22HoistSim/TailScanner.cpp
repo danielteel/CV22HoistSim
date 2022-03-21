@@ -14,6 +14,7 @@
 #include "CanBeAtMovementComponent.h"
 #include "HoistControlPanel.h"
 #include "CV22HoistSimGameModeBase.h"
+#include "SpectatorScreen.h"
 
 // Sets default values
 ATailScanner::ATailScanner()
@@ -41,8 +42,10 @@ ATailScanner::ATailScanner()
 	LeftController->SetOtherHand(RightController);
 	RightController->SetOtherHand(LeftController);
 	
-	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
+	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(FName("PostProcessComponent"));
 	PostProcessComponent->SetupAttachment(VRRoot);
+
+	SpectatorScreen = CreateDefaultSubobject<USpectatorScreen>(FName("Spectator Screen"));
 }
 
 // Called when the game starts or when spawned

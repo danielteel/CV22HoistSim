@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "CV22MovementComponent.h"
 #include "Engine/Font.h"
+#include "TailScanner.h"
 
 // Sets default values for this component's properties
 USpectatorScreen::USpectatorScreen()
@@ -29,7 +30,7 @@ void USpectatorScreen::BeginPlay()
 
 	if (SpectatorTexture != nullptr) {
 		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenTexture(SpectatorTexture);
-		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenModeTexturePlusEyeLayout(FVector2D(0.0f, 0.0f), FVector2D(0.25f, 0.25f), FVector2D(0.0f, 0.0f), FVector2D(1.0f, 1.0f), false, false, false);
+		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenModeTexturePlusEyeLayout(FVector2D(0.0f, 0.0f), FVector2D(0.35f, 0.5f), FVector2D(0.0f, 0.0f), FVector2D(1.0f, 1.0f), false, false, false);
 		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenMode(ESpectatorScreenMode::TexturePlusEye);
 	} else {
 		UHeadMountedDisplayFunctionLibrary::SetSpectatorScreenMode(ESpectatorScreenMode::SingleEyeCroppedToFill);
@@ -43,11 +44,15 @@ void USpectatorScreen::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	AActor* owner = GetOwner();
-	if (owner) {
-		USceneCaptureComponent2D* captureComponent = Cast<USceneCaptureComponent2D>(owner->GetComponentByClass(USceneCaptureComponent2D::StaticClass()));
-		UCV22MovementComponent* movementComponent = Cast<UCV22MovementComponent>(owner->GetComponentByClass(UCV22MovementComponent::StaticClass()));
+	ATailScanner* tailScanner = Cast<ATailScanner>(GetOwner());
+	if (tailScanner) {
+		AActor* currentBeAtActor = tailScanner->GetCurrentBeAtActor();
+
+		USceneCaptureComponent2D* captureComponent = Cast<USceneCaptureComponent2D>(currentBeAtActor->GetComponentByClass(USceneCaptureComponent2D::StaticClass()));
+		if (!captureComponent)  captureComponent = Cast<USceneCaptureComponent2D>(tailScanner->GetComponentByClass(USceneCaptureComponent2D::StaticClass()));
 		if (captureComponent) captureComponent->CaptureScene();
+		
+		UCV22MovementComponent* movementComponent = Cast<UCV22MovementComponent>(currentBeAtActor->GetComponentByClass(UCV22MovementComponent::StaticClass()));
 
 		if (movementComponent) {
 			FVector velocity = movementComponent->GetVelocity();
@@ -61,14 +66,8 @@ void USpectatorScreen::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 				float minComp = size.GetMin();
 				canvas->K2_DrawBox(center -FVector2D(0.25f, 0.25f)*minComp, FVector2D(0.5f, 0.5f)*minComp, 3.0f, FLinearColor::Green);
 				canvas->K2_DrawLine(FVector2D(0.5f, 0.5f)*size, FVector2D(center.X + ((velocity.Y / 257.222f)*0.25f)*minComp, center.Y - ((velocity.X / 257.222f)*0.25f)*minComp), 2.0f, FLinearColor::Green);
-				//FCanvasLineItem line(FVector2D(0.25f, 0.75)*size, FVector2D(0.25f+(velocity.Y/257.222f) *0.2f, 0.75f-(velocity.X/257.222f)*0.2f)*size);
-				//line.LineThickness = 2.0f;
-				//line.SetColor(FLinearColor::Green);
-				//canvas->DrawItem(line);
 				if (Font) {
 					canvas->K2_DrawText(Font, FString("RADALT: ") + FString::FromInt(movementComponent->GetAGL()), FVector2D(0.5f, 0.76f)*size, FVector2D(2.f, 2.f), FLinearColor::White, 0.0f, FLinearColor::Black, FVector2D::UnitVector, true, false, true, FLinearColor::Black);
-					//FText radaltText = FText::FromString(FString("RADALT: ") + FString::FromInt(movementComponent->GetAGL()));
-					//canvas->DrawText(Font, FString("RADALT: ") + FString::FromInt(movementComponent->GetAGL()), 0.1f*size.X, 0.6f*size.Y, 1.0f, 1.0f);
 				}
 				UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(GetWorld(), context);
 			}

@@ -189,12 +189,14 @@ void UHoistComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 
 	//Apply wind drag to hook
 	FVector currentActorLocation = GetOwner()->GetActorLocation();
-	FVector velocity = LastPosition - currentActorLocation;
-	FVector simulatedWindDrag = velocity * 90.0f;
-	simulatedWindDrag.Z = 0;
-	if (HoistOutLength > 200.0f) {//Dont apply drag if not out more than 6 feet
-		if (!GetDeviceOnGround()) {//Dont apply if on the ground
-			RescueHook->AddForce(simulatedWindDrag);
+	if (RescueHook->IsSimulatingPhysics()) {
+		FVector velocity = LastPosition - currentActorLocation;
+		FVector simulatedWindDrag = velocity * 90.0f;
+		simulatedWindDrag.Z = 0;
+		if (HoistOutLength > 200.0f) {//Dont apply drag if not out more than 6 feet
+			if (!GetDeviceOnGround()) {//Dont apply if on the ground
+				RescueHook->AddForce(simulatedWindDrag);
+			}
 		}
 	}
 	LastPosition = currentActorLocation;

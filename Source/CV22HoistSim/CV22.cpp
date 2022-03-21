@@ -28,7 +28,6 @@ ACV22::ACV22()
 
 	Body = CreateDefaultSubobject<UStaticMeshComponent>(FName("Body"));
 	Body->SetupAttachment(Root);
-	Body->SetMassOverrideInKg(NAME_None, 18143.0f, true);
 
 	HoistComponent = CreateDefaultSubobject<UHoistComponent>(FName("Hoist"));
 	HoistComponent->SetupAttachment(Body, FName("Hoist"));
@@ -71,6 +70,7 @@ void ACV22::BeginPlay()
 {
 	Super::BeginPlay();
 	RotorLeft->IsLeftRotor = true;
+	Body->SetMassOverrideInKg(NAME_None, 18143.0f, true);
 	Body->SetSimulatePhysics(true);
 	Body->SetUseCCD(true);
 	MovementComponent->Setup(Body);

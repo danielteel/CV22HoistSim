@@ -4,32 +4,22 @@
 #include "Lever.h"
 
 ULever::ULever() {
-	LeverHandleComponent = CreateDefaultSubobject<ULeverHandle>(FName("Handle"));
-	BaseComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("Base"));
 }
 
 
 void ULever::OnRegister() {
 	Super::OnRegister();
 
-	if (BaseComponent) {
-		if (BaseMesh) {
-			BaseComponent->SetStaticMesh(BaseMesh);
-		} else {
-			UE_LOG(LogTemp, Warning, TEXT("No base mesh selected for Lever component"))
-		}
-		BaseComponent->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
-	}
+	BaseComponent = NewObject<UStaticMeshComponent>(this, FName("Base"));
+	BaseComponent->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	BaseComponent->RegisterComponent();
+	BaseComponent->SetStaticMesh(BaseMesh);
 
-	if (LeverHandleComponent) {
-		if (LeverHandleMesh) {
-			LeverHandleComponent->SetStaticMesh(LeverHandleMesh);
-		} else {
-			UE_LOG(LogTemp, Warning, TEXT("No lever handle mesh selected for Lever component"))
-		}
-		LeverHandleComponent->AttachToComponent(BaseComponent, FAttachmentTransformRules::KeepRelativeTransform, FName("Lever"));
-		LeverHandleComponent->Setup(MinPitch, MaxPitch, 0.0f, this, WantsConstantUpdates);
-	}
+	LeverHandleComponent = NewObject<ULeverHandle>(this, FName("Handle"));
+	LeverHandleComponent->AttachToComponent(BaseComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	LeverHandleComponent->RegisterComponent();
+	LeverHandleComponent->SetStaticMesh(LeverHandleMesh);
+	LeverHandleComponent->Setup(MinPitch, MaxPitch, 0.0f, this, WantsConstantUpdates);
 }
 
 
@@ -46,8 +36,9 @@ void ULever::LeverWasSet(float value) {
 	float divider = delta / float(Positions);
 	int step = FMath::Clamp(int((value * delta) / divider), 0, Positions-1);
 	float leverAlpha = float(step) / (float(Positions) - 1);
-	CurrentValue = step;
+	if (CurrentValue != step) {
+		CurrentValue = step;
+		OnLeverWasChanged.Broadcast(CurrentValue);
+	}
 	LeverHandleComponent->SetValue(leverAlpha);
-
-	OnLeverWasChanged.Broadcast(CurrentValue);
 }

@@ -34,6 +34,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USceneComponent* CurrentBeAtComponent = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USpectatorScreen* SpectatorScreen = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool NVGsOn = false;
