@@ -36,9 +36,10 @@ void ULever::LeverWasSet(float value) {
 	float divider = delta / float(Positions);
 	int step = FMath::Clamp(int((value * delta) / divider), 0, Positions-1);
 	float leverAlpha = float(step) / (float(Positions) - 1);
+
+	LeverHandleComponent->SetValue(leverAlpha);
 	if (CurrentValue != step) {
 		CurrentValue = step;
 		OnLeverWasChanged.Broadcast(CurrentValue);
 	}
-	LeverHandleComponent->SetValue(leverAlpha);
 }
