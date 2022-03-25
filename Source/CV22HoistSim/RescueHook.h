@@ -5,11 +5,12 @@
 #include "CoreMinimal.h"
 #include "Components/StaticMeshComponent.h"
 #include "Grabbable.h"
+#include "HookInterface.h"
 #include "RescueHook.generated.h"
 
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class CV22HOISTSIM_API URescueHook : public UStaticMeshComponent, public IGrabbable {
+class CV22HOISTSIM_API URescueHook : public UStaticMeshComponent, public IGrabbable, public IHookInterface {
 	GENERATED_BODY()
 
 public:
