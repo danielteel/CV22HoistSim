@@ -61,6 +61,7 @@ void UHoistComponent::OnRegister() {
 	CableGrabber->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetIncludingScale);
 	CableGrabber->RegisterComponent();
 
+	RescueHook->SetCenterOfMass(FVector(0, 0, -1.0f));
 	RescueHook->SetStaticMesh(RescueHookMesh);
 	RescueHook->SetMassOverrideInKg(NAME_None, 3.0f);
 	RescueHook->SetUseCCD(true);
@@ -76,10 +77,9 @@ void UHoistComponent::OnRegister() {
 
 
 	BaseToHookCable->CableLength = 1.0f;
-	BaseToHookCable->NumSegments = 70;
+	BaseToHookCable->NumSegments = 50;
 	BaseToHookCable->bEnableStiffness = true;
 	BaseToHookCable->SolverIterations = 16;
-	BaseToHookCable->SubstepTime = 0.01;
 	BaseToHookCable->SetEnableGravity(true);
 	BaseToHookCable->bEnableCollision = true;
 	BaseToHookCable->EndLocation = FVector(0.0f);
@@ -87,6 +87,7 @@ void UHoistComponent::OnRegister() {
 	BaseToHookCable->CableWidth = 4.0f;
 	BaseToHookCable->CollisionFriction = 0.05f;
 	BaseToHookCable->SetMaterial(0, CableMaterial);
+	BaseToHookCable->PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
 
 	BoomToBaseCable->CableLength = 1.0f;
 	BoomToBaseCable->NumSegments = 1;
@@ -96,6 +97,7 @@ void UHoistComponent::OnRegister() {
 	BoomToBaseCable->SetAttachEndToComponent(CableBase);
 	BoomToBaseCable->CableWidth = BaseToHookCable->CableWidth;
 	BoomToBaseCable->SetMaterial(0, CableMaterial);
+	BoomToBaseCable->PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
 
 
 	CableBaseConstraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, 0.0f);
@@ -199,6 +201,7 @@ void UHoistComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 			}
 		}
 	}
+	BaseToHookCable->ApplyWorldOffset(-(LastPosition - currentActorLocation), false);
 	LastPosition = currentActorLocation;
 }
 
@@ -210,7 +213,7 @@ void UHoistComponent::SetHoistLength(float hoistLength) {
 
 	float hoistOutMinusOffset = HoistOutLength - HoistGrabOffset;
 
-	BaseToHookCable->CableLength = hoistOutMinusOffset- 40.0f;
+	BaseToHookCable->CableLength = hoistOutMinusOffset-40.0f;
 
 	if (HoistGrabOffset < 1.0f) {
 		BoomToBaseCable->SetVisibility(false);
